@@ -1,0 +1,21 @@
+Info 0    [12:57:03.658] Starting TS Server
+Info 1    [12:57:03.660] Version: 4.3.5
+Info 2    [12:57:03.660] Arguments: /usr/local/bin/node /usr/bin/tsserver --logFile /home/peter/.local/src/nextjs-blog/.log/tsserver.log --logVerbosity info --cancellationPipeName /tmp/5c982b137c634e32ec090a7c0a6ceb26/tscancellation*
+Info 3    [12:57:03.660] Platform: linux NodeVersion: 16 CaseSensitive: true
+Info 4    [12:57:03.660] ServerMode: undefined syntaxOnly: false hasUnknownServerMode: undefined
+Info 5    [12:57:03.677] Search path: /home/peter/.local/src/nextjs-blog/components
+Info 6    [12:57:03.677] For info: /home/peter/.local/src/nextjs-blog/components/layout.tsx :: No config files found.
+Info 7    [12:57:03.681] Starting updateGraphWorker: Project: /dev/null/inferredProject1*
+Info 8    [12:57:05.502] Finishing updateGraphWorker: Project: /dev/null/inferredProject1* Version: 1 structureChanged: true Elapsed: 1820.740622997284ms
+Info 9    [12:57:05.502] Project '/dev/null/inferredProject1*' (Inferred)
+Info 10   [12:57:05.503] 	Files (101)
+
+Info 11   [12:57:05.503] -----------------------------------------------
+Info 12   [12:57:05.524] Starting updateGraphWorker: Project: /dev/null/autoImportProviderProject1*
+Info 13   [12:57:06.151] Finishing updateGraphWorker: Project: /dev/null/autoImportProviderProject1* Version: 1 structureChanged: true Elapsed: 626.8745719790459ms
+Info 14   [12:57:06.151] Project '/dev/null/autoImportProviderProject1*' (AutoImportProvider)
+Info 15   [12:57:06.151] 	Files (105)
+
+Info 16   [12:57:06.151] -----------------------------------------------
+Info 17   [15:33:17.661] FileWatcher:: Triggered with /home/peter/.local/src/nextjs-blog/package.json 1:: WatchInfo: /home/peter/.local/src/nextjs-blog/package.json 250 undefined WatchType: package.json file for import suggestions
+Info 18   [15:33:17.670] Elapsed:: 1.4181340336799622ms FileWatcher:: Triggered with /home/peter/.local/src/nextjs-blog/package.json 1:: WatchInfo: /home/peter/.local/src/nextjs-blog/package.json 250 undefined WatchType: package.json file for import suggestions
