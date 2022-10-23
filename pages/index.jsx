@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useReducer } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Stars, OrbitControls } from '@react-three/drei'
 import Cube from '../components/Cube'
@@ -44,35 +44,36 @@ export default function Home() {
     [arr[index1], arr[index2]] = [arr[index2], arr[index1]]
   };
 
-  const [center0, setM0] = useState({ mat: mMat0, postion: 0 })
-  const [center1, setM1] = useState({ mat: mMat1, postion: 1 })
-  const [center2, setM2] = useState({ mat: mMat2, postion: 2 })
-  const [center3, setM3] = useState({ mat: mMat3, postion: 3 })
-  const [center4, setM4] = useState({ mat: mMat4, postion: 4 })
-  const [center5, setM5] = useState({ mat: mMat5, postion: 5 })
+  const [center0, setM0] = useState({ mat: mMat0, id: 0 }) // id indicates the correct location index
+  const [center1, setM1] = useState({ mat: mMat1, id: 1 })
+  const [center2, setM2] = useState({ mat: mMat2, id: 2 })
+  const [center3, setM3] = useState({ mat: mMat3, id: 3 })
+  const [center4, setM4] = useState({ mat: mMat4, id: 4 })
+  const [center5, setM5] = useState({ mat: mMat5, id: 5 })
 
-  const [corner0, setC0] = useState({ mat: cMat0, ori: 0, position: 0 })
-  const [corner1, setC1] = useState({ mat: cMat1, ori: 0, position: 1 })
-  const [corner2, setC2] = useState({ mat: cMat2, ori: 0, position: 2 })
-  const [corner3, setC3] = useState({ mat: cMat3, ori: 0, position: 3 })
-  const [corner4, setC4] = useState({ mat: cMat4, ori: 0, position: 4 })
-  const [corner5, setC5] = useState({ mat: cMat5, ori: 0, position: 5 })
-  const [corner6, setC6] = useState({ mat: cMat6, ori: 0, position: 6 })
-  const [corner7, setC7] = useState({ mat: cMat7, ori: 0, position: 7 })
+  const [corner0, setC0] = useState({ mat: cMat0, ori: 0, id: 0 })
+  const [corner1, setC1] = useState({ mat: cMat1, ori: 0, id: 1 })
+  const [corner2, setC2] = useState({ mat: cMat2, ori: 0, id: 2 })
+  const [corner3, setC3] = useState({ mat: cMat3, ori: 0, id: 3 })
+  const [corner4, setC4] = useState({ mat: cMat4, ori: 0, id: 4 })
+  const [corner5, setC5] = useState({ mat: cMat5, ori: 0, id: 5 })
+  const [corner6, setC6] = useState({ mat: cMat6, ori: 0, id: 6 })
+  const [corner7, setC7] = useState({ mat: cMat7, ori: 0, id: 7 })
 
-  const [edge0, setE0] = useState({ mat: eMat0, ori: 0, position: 0 })
-  const [edge1, setE1] = useState({ mat: eMat1, ori: 0, position: 1 })
-  const [edge2, setE2] = useState({ mat: eMat2, ori: 0, position: 2 })
-  const [edge3, setE3] = useState({ mat: eMat3, ori: 0, position: 3 })
-  const [edge4, setE4] = useState({ mat: eMat4, ori: 0, position: 4 })
-  const [edge5, setE5] = useState({ mat: eMat5, ori: 0, position: 5 })
-  const [edge6, setE6] = useState({ mat: eMat6, ori: 0, position: 6 })
-  const [edge7, setE7] = useState({ mat: eMat7, ori: 0, position: 7 })
-  const [edge8, setE8] = useState({ mat: eMat8, ori: 0, position: 8 })
-  const [edge9, setE9] = useState({ mat: eMat9, ori: 0, position: 9 })
-  const [edge10, setE10] = useState({ mat: eMat10, ori: 0, positon: 10 })
-  const [edge11, setE11] = useState({ mat: eMat11, ori: 0, postion: 11 })
+  const [edge0, setE0] = useState({ mat: eMat0, ori: 0, id: 0 })
+  const [edge1, setE1] = useState({ mat: eMat1, ori: 0, id: 1 })
+  const [edge2, setE2] = useState({ mat: eMat2, ori: 0, id: 2 })
+  const [edge3, setE3] = useState({ mat: eMat3, ori: 0, id: 3 })
+  const [edge4, setE4] = useState({ mat: eMat4, ori: 0, id: 4 })
+  const [edge5, setE5] = useState({ mat: eMat5, ori: 0, id: 5 })
+  const [edge6, setE6] = useState({ mat: eMat6, ori: 0, id: 6 })
+  const [edge7, setE7] = useState({ mat: eMat7, ori: 0, id: 7 })
+  const [edge8, setE8] = useState({ mat: eMat8, ori: 0, id: 8 })
+  const [edge9, setE9] = useState({ mat: eMat9, ori: 0, id: 9 })
+  const [edge10, setE10] = useState({ mat: eMat10, ori: 0, id: 10 })
+  const [edge11, setE11] = useState({ mat: eMat11, ori: 0, id: 11 })
 
+  // The order in the array matters. setterState so to correspond with the same piece.
   const [cornerState, setCornerState] = useState([corner0, corner1, corner2, corner3, corner4, corner5, corner6, corner7])
   const [cornerSetterState, setCornerSetterState] = useState([setC0, setC1, setC2, setC3, setC4, setC5, setC6, setC7])
 
@@ -145,16 +146,20 @@ export default function Home() {
           cornerSetterState[corners[i]]({ mat: cornerState[corners[i]].mat.premultiply(rMatY), ...cornerState[corners[i]] })
           edgeSetterState[edges[i]]({ mat: edgeState[edges[i]].mat.premultiply(rMatY), ...edgeState[edges[i]] })
         }
+
+        // oris remain unchanged
+
         centerSetterState[center]({ mat: centerState[center].mat.premultiply(rMatY), ...centerState[center] })
       } else if (axis === "x") {
         for (var i in corners) {
           cornerSetterState[corners[i]]({ mat: cornerState[corners[i]].mat.premultiply(rMatX), ...cornerState[corners[i]] })
           edgeSetterState[edges[i]]({ mat: edgeState[edges[i]].mat.premultiply(rMatX), ...edgeState[edges[i]] })
         }
-        // cornerSetterState[corners[0]]({ori: (cornerState[corners[0]].ori+1)%3, ...cornerState[corners[0]]})
-        // cornerSetterState[corners[2]]({ori: (cornerState[corners[2]].ori+1)%3, ...cornerState[corners[2]]})
-        // cornerSetterState[corners[1]]({ori: Math.abs(cornerState[corners[1]].ori-1)%3, ...cornerState[corners[1]]})
-        // cornerSetterState[corners[3]]({ori: Math.abs(cornerState[corners[3]].ori-1)%3, ...cornerState[corners[3]]})
+        // set oris
+        cornerSetterState[corners[0]]({ ori: (cornerState[corners[0]].ori + 1) % 3, ...cornerState[corners[0]] })
+        cornerSetterState[corners[2]]({ ori: (cornerState[corners[2]].ori + 1) % 3, ...cornerState[corners[2]] })
+        cornerSetterState[corners[1]]({ ori: (cornerState[corners[1]].ori - 1) % 3, ...cornerState[corners[1]] })
+        cornerSetterState[corners[3]]({ ori: (cornerState[corners[3]].ori - 1) % 3, ...cornerState[corners[3]] })
 
         centerSetterState[center]({ mat: centerState[center].mat.premultiply(rMatX), ...centerState[center] })
 
@@ -164,10 +169,10 @@ export default function Home() {
           edgeSetterState[edges[i]]({ mat: edgeState[edges[i]].mat.premultiply(rMatZ), ...edgeState[edges[i]] })
         }
 
-        // cornerSetterState[corners[1]]({ori: (cornerState[corners[0]].ori+1)%3, ...cornerState[corners[0]]})
-        // cornerSetterState[corners[3]]({ori: (cornerState[corners[2]].ori+1)%3, ...cornerState[corners[2]]})
-        // cornerSetterState[corners[0]]({ori: Math.abs(cornerState[corners[1]].ori-1)%3, ...cornerState[corners[1]]})
-        // cornerSetterState[corners[2]]({ori: Math.abs(cornerState[corners[3]].ori-1)%3, ...cornerState[corners[3]]})
+        cornerSetterState[corners[0]]({ ori: (cornerState[corners[0]].ori + 1) % 3, ...cornerState[corners[0]] })
+        cornerSetterState[corners[2]]({ ori: (cornerState[corners[2]].ori + 1) % 3, ...cornerState[corners[2]] })
+        cornerSetterState[corners[1]]({ ori: (cornerState[corners[1]].ori - 1) % 3, ...cornerState[corners[1]] })
+        cornerSetterState[corners[3]]({ ori: (cornerState[corners[3]].ori - 1) % 3, ...cornerState[corners[3]] })
 
         centerSetterState[center]({ mat: centerState[center].mat.premultiply(rMatZ), ...centerState[center] })
       }
@@ -184,26 +189,35 @@ export default function Home() {
 
         centerSetterState[center]({ mat: centerState[center].mat.premultiply(rMatY), ...centerState[center] })
       } else if (axis === "x") {
-        // cornerSetterState[corners[1]]({ori: (cornerState[corners[0]].ori+1)%3, ...cornerState[corners[0]]})
-        // cornerSetterState[corners[3]]({ori: (cornerState[corners[2]].ori+1)%3, ...cornerState[corners[2]]})
-        // cornerSetterState[corners[0]]({ori: Math.abs(cornerState[corners[1]].ori-1)%3, ...cornerState[corners[1]]})
-        // cornerSetterState[corners[2]]({ori: Math.abs(cornerState[corners[3]].ori-1)%3, ...cornerState[corners[3]]})
-
         for (var i in corners) {
           cornerSetterState[corners[i]]({ mat: cornerState[corners[i]].mat.premultiply(rMatX), ...cornerState[corners[i]] })
           edgeSetterState[edges[i]]({ mat: edgeState[edges[i]].mat.premultiply(rMatX), ...edgeState[edges[i]] })
         }
+        // console.log("Before: ")
+        // console.log(cornerState)
+        // setC3({ ...corner3, ori: (corner3.ori + 1) % 3 })
+        // console.log("Result")
+        // console.log(corner3)
+        cornerSetterState[corners[0]](prevCornerState => ({ ori: (prevCornerState.ori - 1) % 3, ...prevCornerState }))
+        cornerSetterState[corners[2]](prevCornerState => ({ ori: (prevCornerState.ori - 1) % 3, ...prevCornerState }))
+        cornerSetterState[corners[1]](prevCornerState => ({ ori: (prevCornerState.ori - 1) % 3, ...prevCornerState }))
+        cornerSetterState[corners[3]](prevCornerState => ({ ori: (prevCornerState.ori - 1) % 3, ...prevCornerState }))
+        // cornerSetterState[corners[2]]({ ori: (cornerState[corners[2]].ori - 1) % 3, ...cornerState[corners[2]] })
+        // cornerSetterState[corners[1]]({ ori: (cornerState[corners[1]].ori + 1) % 3, ...cornerState[corners[1]] })
+        // cornerSetterState[corners[3]]({ ori: (cornerState[corners[3]].ori + 1) % 3, ...cornerState[corners[3]] })
+        console.log("After: ")
+        console.log(cornerState[corners[0]])
+
         centerSetterState[center]({ mat: centerState[center].mat.premultiply(rMatX), ...centerState[center] })
       } else if (axis === "z") {
         for (var i in corners) {
           cornerSetterState[corners[i]]({ mat: cornerState[corners[i]].mat.premultiply(rMatZ), ...cornerState[corners[i]] })
           edgeSetterState[edges[i]]({ mat: edgeState[edges[i]].mat.premultiply(rMatZ), ...edgeState[edges[i]] })
         }
-
-        // cornerSetterState[corners[0]]({ori: (cornerState[corners[0]].ori+1)%3, ...cornerState[corners[0]]})
-        // cornerSetterState[corners[2]]({ori: (cornerState[corners[2]].ori+1)%3, ...cornerState[corners[2]]})
-        // cornerSetterState[corners[1]]({ori: Math.abs(cornerState[corners[1]].ori-1)%3, ...cornerState[corners[1]]})
-        // cornerSetterState[corners[3]]({ori: Math.abs(cornerState[corners[3]].ori-1)%3, ...cornerState[corners[3]]})
+        cornerSetterState[corners[0]]({ ori: (cornerState[corners[0]].ori - 1) % 3, ...cornerState[corners[0]] })
+        cornerSetterState[corners[2]]({ ori: (cornerState[corners[2]].ori - 1) % 3, ...cornerState[corners[2]] })
+        cornerSetterState[corners[1]]({ ori: (cornerState[corners[1]].ori + 1) % 3, ...cornerState[corners[1]] })
+        cornerSetterState[corners[3]]({ ori: (cornerState[corners[3]].ori + 1) % 3, ...cornerState[corners[3]] })
 
         centerSetterState[center]({ mat: centerState[center].mat.premultiply(rMatZ), ...centerState[center] })
       }
@@ -292,13 +306,13 @@ export default function Home() {
   function Reset() {
 
     for (var i = 0; i < 8; i++) {
-      cornerSetterState[i]({ mat: cornerState[i].mat.identity(), ori: 0 })
+      cornerSetterState[i]({ mat: cornerState[i].mat.identity(), ori: 1234, ...cornerState[i] })
     }
     for (var i = 0; i < 12; i++) {
-      edgeSetterState[i]({ mat: edgeState[i].mat.identity(), ori: 0 })
+      edgeSetterState[i]({ mat: edgeState[i].mat.identity(), ori: 0, ...edgeState[i] })
     }
     for (var i = 0; i < 6; i++) {
-      centerSetterState[i]({ mat: centerState[i].mat.identity() })
+      centerSetterState[i]({ mat: centerState[i].mat.identity(), ...centerState[i] })
     }
     setCornerState([corner0, corner1, corner2, corner3, corner4, corner5, corner6, corner7])
     setCornerSetterState([setC0, setC1, setC2, setC3, setC4, setC5, setC6, setC7])
