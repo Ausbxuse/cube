@@ -5,7 +5,7 @@ import Corner from '../components/Corner'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-export default function Cube(props) {
+export default function Cube3D(props) {
   const wholeCube = useRef()
   // var x = 0
   useFrame((state, delta) => {
