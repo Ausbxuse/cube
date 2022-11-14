@@ -303,7 +303,28 @@ export default function Home() {
     return nextCorners
   }
 
-  function move(mVarCorners, varEdges, corners_id, edges_id, axis, direction, center_id, is_b, yes_mat = true) {
+  function orientEdges(edges, idx, direction) {
+    const nextEdges = edges.map((edge) => {
+      if (direction === "positive") {
+        if (edge.pos == idx) {
+          return {
+            ...edge,
+            ori: mod((edge.ori + 1), 2)
+          }
+        } else return edge;
+      } else {
+        if (edge.pos == idx) {
+          return {
+            ...edge,
+            ori: mod((edge.ori - 1), 2)
+          }
+        } else return edge;
+      }
+    })
+    return nextEdges
+  }
+
+  function move(mVarCorners, mVarEdges, corners_id, edges_id, axis, direction, center_id, is_b, yes_mat = true) {
     if (direction === "positive") {
       const angle = Math.PI / 2  // clockwise 90 degrees
       const rMatX = new THREE.Matrix4().makeRotationX(angle)
@@ -349,11 +370,21 @@ export default function Home() {
           mVarCorners = orientCorners(mVarCorners, corners_id[2], "positive")
           mVarCorners = orientCorners(mVarCorners, corners_id[1], "negative")
           mVarCorners = orientCorners(mVarCorners, corners_id[3], "negative")
+
+          mVarEdges = orientEdges(mVarEdges, edges_id[0], "negative")
+          mVarEdges = orientEdges(mVarEdges, edges_id[2], "negative")
+          mVarEdges = orientEdges(mVarEdges, edges_id[1], "positive")
+          mVarEdges = orientEdges(mVarEdges, edges_id[3], "positive")
         } else {
           mVarCorners = orientCorners(mVarCorners, corners_id[0], "negative")
           mVarCorners = orientCorners(mVarCorners, corners_id[2], "negative")
           mVarCorners = orientCorners(mVarCorners, corners_id[1], "positive")
           mVarCorners = orientCorners(mVarCorners, corners_id[3], "positive")
+
+          mVarEdges = orientEdges(mVarEdges, edges_id[0], "negative")
+          mVarEdges = orientEdges(mVarEdges, edges_id[2], "negative")
+          mVarEdges = orientEdges(mVarEdges, edges_id[1], "positive")
+          mVarEdges = orientEdges(mVarEdges, edges_id[3], "positive")
         }
 
       }
@@ -397,60 +428,33 @@ export default function Home() {
           mVarCorners = orientCorners(mVarCorners, corners_id[2], "positive")
           mVarCorners = orientCorners(mVarCorners, corners_id[1], "negative")
           mVarCorners = orientCorners(mVarCorners, corners_id[3], "negative")
+
+          mVarEdges = orientEdges(mVarEdges, edges_id[0], "negative")
+          mVarEdges = orientEdges(mVarEdges, edges_id[2], "negative")
+          mVarEdges = orientEdges(mVarEdges, edges_id[1], "positive")
+          mVarEdges = orientEdges(mVarEdges, edges_id[3], "positive")
         } else {
           mVarCorners = orientCorners(mVarCorners, corners_id[0], "negative")
           mVarCorners = orientCorners(mVarCorners, corners_id[2], "negative")
           mVarCorners = orientCorners(mVarCorners, corners_id[1], "positive")
           mVarCorners = orientCorners(mVarCorners, corners_id[3], "positive")
+
+          mVarEdges = orientEdges(mVarEdges, edges_id[0], "negative")
+          mVarEdges = orientEdges(mVarEdges, edges_id[2], "negative")
+          mVarEdges = orientEdges(mVarEdges, edges_id[1], "positive")
+          mVarEdges = orientEdges(mVarEdges, edges_id[3], "positive")
         }
       }
     }
 
     mVarCorners = cornerArraySwap(mVarCorners, corners_id, direction)
-    varEdges = edgeArraySwap(varEdges, edges_id, direction)
-    return [mVarCorners, varEdges]
+    mVarEdges = edgeArraySwap(mVarEdges, edges_id, direction)
+    return [mVarCorners, mVarEdges]
   }
 
   // None 3D move. Returns a list of corners and a list of TODO:edges
   // TODO: parameter add the corners object (in [{pos: 0, ori: 1}, {pos: 1, ori: 1} format)
   // TODO: map each move with corresponding pieces id
-  function ori_corners(mv, corners_sub) {
-    var corners_id = move_map[mv][0]
-    var direction = move_map[mv][3]
-    var axis = move_map[mv][2]
-
-    if (direction === "positive") {
-      if (axis === "y") {
-      } else if (axis === "x") {
-        corners_sub = orientCorners(corners_sub, corners_id[0], "positive")
-        corners_sub = orientCorners(corners_sub, corners_id[2], "positive")
-        corners_sub = orientCorners(corners_sub, corners_id[1], "negative")
-        corners_sub = orientCorners(corners_sub, corners_id[3], "negative")
-      } else if (axis === "z") {
-        corners_sub = orientCorners(corners_sub, corners_id[0], "positive")
-        corners_sub = orientCorners(corners_sub, corners_id[2], "positive")
-        corners_sub = orientCorners(corners_sub, corners_id[1], "negative")
-        corners_sub = orientCorners(corners_sub, corners_id[3], "negative")
-      }
-    } else if (direction === "negative") {
-      if (axis === "y") {
-      } else if (axis === "x") {
-        corners_sub = orientCorners(corners_sub, corners_id[0], "positive")
-        corners_sub = orientCorners(corners_sub, corners_id[2], "positive")
-        corners_sub = orientCorners(corners_sub, corners_id[1], "negative")
-        corners_sub = orientCorners(corners_sub, corners_id[3], "negative")
-      } else if (axis === "z") {
-        corners_sub = orientCorners(corners_sub, corners_id[0], "positive")
-        corners_sub = orientCorners(corners_sub, corners_id[2], "positive")
-        corners_sub = orientCorners(corners_sub, corners_id[1], "negative")
-        corners_sub = orientCorners(corners_sub, corners_id[3], "negative")
-      }
-    }
-
-    varCorners = cornerArraySwap(varCorners, corners_id, direction)
-
-    return corners_sub
-  }
 
   function rotate(axis, direction) {
     const angle = - Math.PI / 2  // clockwise 90 degrees
@@ -557,7 +561,7 @@ export default function Home() {
     return res
   }
 
-  function corner_equal(cube1, cube2) {
+  function piece_equal(cube1, cube2) {
     for (let map_id in cube1[0]) {
       for (let key in cube1[0][map_id]) {
         if (key == "id" || key == "pos") {
@@ -578,6 +582,10 @@ export default function Home() {
     return [B(cube, false), D(cube, false), L(cube, false)]
   }
 
+  function eNeighbors(cube) {
+    return [B(cube, false), D(cube, false), L(cube, false), R(cube, false)]
+  }
+
   // Return the setup moves required to the intended location using only {B,D,L}. 
   // piece1 and 2 are both a pair of numbers. First one indicates the target location, second indicates target orientation
 
@@ -596,6 +604,76 @@ export default function Home() {
     return (id1 === actual1_id && id2 === actual2_id)
   }
 
+  function eMatch_2pos(cube, id1, id2, target_pos1, target_pos2) {
+    var actual1_id = -2, actual2_id = -2
+    cube[1].map((edge) => {
+      if (edge.pos == target_pos1) {
+        actual1_id = edge.id
+      } else if (edge.pos == target_pos2) {
+        actual2_id = edge.id
+      }
+      return edge;
+    })
+
+    // console.log(id1, id2, actual1_id, actual2_id)
+    return (id1 === actual1_id && id2 === actual2_id)
+  }
+
+  function eBFS(cube, current_pos1, current_pos2, target_pos1, target_pos2) {
+    var pos1_id = -1, pos2_id = -1
+    cube[1].map((corner) => {
+      if (corner.pos == current_pos1) {
+        pos1_id = corner.id
+      } else if (corner.pos == current_pos2) {
+        pos2_id = corner.id
+      }
+      return corner;
+    })
+
+    var frontier = []
+    var parents = new Map()
+    var visited = new Map()
+
+
+    // console.log("#############DEBUG###############")
+    frontier.push(cube)
+
+    var loop_n = 0
+
+    while (frontier.length != 0 && loop_n < 1000) {
+      loop_n++
+      var cube_curr = frontier.shift()
+
+      if (visited.get(cube_curr) === undefined) { // If there is no parent, it means that it is either root or unexplored
+        visited.set(cube_curr, true)
+        for (var v of eNeighbors(cube_curr)) {
+          // console.log("a neighbor", v)
+          frontier.push(v)
+          parents.set(v, cube_curr)
+          if (eMatch_2pos(v, pos1_id, pos2_id, target_pos1, target_pos2)) {
+            var moves = []
+
+            while (parents.get(v) !== undefined && v !== undefined) {
+              if (piece_equal(L(parents.get(v), false), v)) {
+                moves.unshift("L")
+              } else if (piece_equal(B(parents.get(v), false), v)) {
+                moves.unshift("B")
+              } else if (piece_equal(D(parents.get(v), false), v)) {
+                moves.unshift("D")
+              } else if (piece_equal(R(parents.get(v), false), v)) {
+                moves.unshift("R")
+              }
+
+              v = parents.get(v)
+            }
+
+            return moves
+          }
+        }
+      }
+    }
+    return []
+  }
   // TODO: handle already solved state
   function BFS(cube, current_pos1, current_pos2, target_pos1, target_pos2) {
     var pos1_id = -1, pos2_id = -1
@@ -632,11 +710,11 @@ export default function Home() {
             var moves = []
 
             while (parents.get(v) !== undefined && v !== undefined) {
-              if (corner_equal(L(parents.get(v), false), v)) {
+              if (piece_equal(L(parents.get(v), false), v)) {
                 moves.unshift("L")
-              } else if (corner_equal(B(parents.get(v), false), v)) {
+              } else if (piece_equal(B(parents.get(v), false), v)) {
                 moves.unshift("B")
-              } else if (corner_equal(D(parents.get(v), false), v)) {
+              } else if (piece_equal(D(parents.get(v), false), v)) {
                 moves.unshift("D")
               }
               v = parents.get(v)
@@ -650,57 +728,173 @@ export default function Home() {
     return []
   }
 
-  function exploredAll(cube, moves, explored_id = -1) {
-    var corner_explored = [false, false, false, true, false, false, false, false]
-    if (explored_id !== -1) {
-      corner_explored[explored_id] = true
-    }
-
-    for (var i = 0; i < moves.length; i++) {
-      corner_explored[moves[i].pos] = true
-    }
-
-
+  function genCornerState(cube) {
+    var corner_state = [0, 0, 0, 2, 0, 0, 0, 0] // 0: unsolved 1:solved -1:borrowed 2: buffer
 
     cube[0].map((corner) => {
       if (corner.pos === corner.id) {
-        corner_explored[corner.id] = true
+        corner_state[corner.id] = 1
       }
-      return corner
     })
 
+    return corner_state
+  }
+
+  function genEdgeState(cube) {
+    var edge_state = [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // 0: unsolved 1:solved -1:borrowed 2: buffer
+
+    cube[1].map((edge) => {
+      if (edge.pos === edge.id) {
+        edge_state[edge.id] = 1
+      }
+    })
+
+    return edge_state
+  }
+
+  // returns the next explorable piece id. return -1 if all explored and/or borrowed
+  function exploreNext(piece_state) {
+
     for (var i = 0; i < 8; i++) {
-      if (corner_explored[i] === false) {
+      if (piece_state[i] === 0) {
         return i
       }
     }
+
     return -1
   }
 
-  function pos2id(corners, pos) {
+  function pos2idori(pieces, pos) {
     var id = -1
-    corners.map((corner) => {
-      if (corner.pos === pos) {
-        id = corner.id
+    var ori = -1
+    pieces.map((piece) => {
+      if (piece.pos === pos) {
+        id = piece.id
+        ori = piece.ori
       }
     })
 
-    return id
+    return [id, ori]
   }
 
-  function id2pos(corners, id) {
+  function id2pos(pieces, id) {
     var retval = -1
-    corners.map((corner) => {
-      if (corner.id === id) {
-        retval = corner.pos
+    pieces.map((piece) => {
+      if (piece.id === id) {
+        retval = piece.pos
       }
     })
 
     return retval
   }
 
+  function checkSolved(piece_state) {
+    for (var i = 0; i < piece_state.length; i++) {
+      if (piece_state[i] === 0 || piece_state[i] === -1) {
+        return false
+      }
+    }
+    return true
+  }
+
+  function genEdgeBlindMoves(cube, moves, edge_state, cnt) {
+    // var edge_state = [0,0,0,0,0,0,0,0] // 0: unsolved 1:solved -1:borrowed
+    console.log("iteration: ", cnt)
+
+    console.log(edge_state)
+    if (checkSolved(edge_state)) {
+      return moves
+    }
+
+    if (moves.length === 0) { // start from the buffer
+      cube[1].map((edge) => {
+        if (edge.pos === 1) {
+          if (edge.id !== 1) {
+            if (edge.ori === 0) {
+              moves.push({ pos: edge.id, ori: mod(edge.ori, 2) })
+            } else if (edge.ori === 1) {
+              moves.push({ pos: edge.id, ori: mod(edge.ori + 1, 2) })
+            }
+            edge_state[edge.id] = 1
+          } else { // when the buffer is already solved
+            next_to_explore = exploreNext(edge_state) // don't borrow edge.pos itself
+            edge_state[next_to_explore] = -1 // borrow this new piece
+            var [_, new_ori] = pos2idori(cube[1], next_to_explore)
+            if (new_ori === 0) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori, 2) })
+            } else if (new_ori === 1) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori + 1, 2) })
+            }
+          }
+        }
+        return edge
+      })
+    }
+
+    var next_to_explore = exploreNext(edge_state)
+    if (cnt < 30) {
+      var found = false
+      cube[1].map((edge) => {
+        if (edge.pos === moves[moves.length - 1].pos && !found) {
+          found = true
+          if (edge.id !== 1) { // not buffer
+            if (edge_state[edge.id] === -1 || edge_state[edge.id] === 2 || edge_state[edge.id] === 0) { // if the pointed edge is borrowed, meaning we have returned it
+              edge_state[edge.id] = 1
+
+              if (edge.ori === 0) {
+                moves.push({ pos: edge.id, ori: mod(edge.ori + moves[moves.length - 1].ori, 2) })
+              } else if (edge.ori === 1) {
+                moves.push({ pos: edge.id, ori: mod(edge.ori + moves[moves.length - 1].ori + 1, 2) })
+              }
+            } else if (edge_state[edge.id] === 0) {
+              edge_state[edge.id] = 1
+
+              if (edge.ori === 0) {
+                moves.push({ pos: edge.id, ori: mod(edge.ori + moves[moves.length - 1].ori, 2) })
+              } else if (edge.ori === 1) {
+                moves.push({ pos: edge.id, ori: mod(edge.ori + moves[moves.length - 1].ori + 1, 2) })
+              }
+            } else if (edge_state[edge.id] === 1 || edge_state[edge.id] === 2) { // TODO:why does 2 not handle pointed buffer case?
+              next_to_explore = exploreNext(edge_state) // don't borrow edge.pos itself
+
+              edge_state[next_to_explore] = -1 // borrow this new piece
+              var [_, new_ori] = pos2idori(cube[1], next_to_explore)
+              if (new_ori === 0) {
+                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori, 2) })
+              } else if (new_ori === 1) {
+                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori + 1, 2) })
+              }
+            }
+
+          } else {
+            next_to_explore = exploreNext(edge_state) // don't borrow edge.pos itself
+
+            edge_state[next_to_explore] = -1 // borrow this new piece
+            var [_, new_ori] = pos2idori(cube[1], next_to_explore)
+            if (new_ori === 0) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori, 2) })
+            } else if (new_ori === 1) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori + 1, 2) })
+            }
+          }
+        }
+        return edge
+      })
+      return genBlindMoves(cube, moves, edge_state, ++cnt)
+    } else {
+      return moves
+    }
+  }
   // TODO: for edges too
-  function genBlindMoves(cube, moves, borrow, cnt) {
+  function genBlindMoves(cube, moves, corner_state, cnt) {
+    // var corner_state = [0,0,0,0,0,0,0,0] // 0: unsolved 1:solved -1:borrowed
+    console.log("iteration: ", cnt)
+
+    console.log(corner_state)
+    if (checkSolved(corner_state)) {
+      return moves
+    }
+
     if (moves.length === 0) { // start from the buffer
       cube[0].map((corner) => {
         if (corner.pos === 3) {
@@ -712,19 +906,17 @@ export default function Home() {
             } else if (corner.ori === 2) {
               moves.push({ pos: corner.id, ori: mod(corner.ori - 1, 3) })
             }
-          } else {
-            next_to_explore = exploredAll(cube, moves, corner.pos) // don't borrow corner.pos itself
-            if (next_to_explore === -1) {
-              return []
-            } else {
-              borrow = true
-              if (cube[0][next_to_explore].ori === 0) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori, 3) })
-              } else if (cube[0][next_to_explore].ori === 1) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + 1, 3) })
-              } else if (cube[0][next_to_explore].ori === 2) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori - 1, 3) })
-              }
+            corner_state[corner.id] = 1
+          } else { // when the buffer is already solved
+            next_to_explore = exploreNext(corner_state) // don't borrow corner.pos itself
+            corner_state[next_to_explore] = -1 // borrow this new piece
+            var [_, new_ori] = pos2idori(cube[0], next_to_explore)
+            if (new_ori === 0) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori, 3) })
+            } else if (new_ori === 1) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori + 1, 3) })
+            } else if (new_ori === 2) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori - 1, 3) })
             }
           }
         }
@@ -732,58 +924,16 @@ export default function Home() {
       })
     }
 
-    var next_to_explore = exploredAll(cube, moves)
-    if (next_to_explore !== -1 && cnt < 10) {
+    var next_to_explore = exploreNext(corner_state)
+    if (cnt < 15) {
       var found = false
       cube[0].map((corner) => {
         if (corner.pos === moves[moves.length - 1].pos && !found) {
           found = true
-          if (corner.id === 3) { // need to borrow when it points at the buffer
-            if (borrow === false) {
-              borrow = true
-              next_to_explore = exploredAll(cube, moves, corner.pos) // don't borrow corner.pos itself
-              if (cube[0][next_to_explore].ori === 0) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori, 3) })
-              } else if (cube[0][next_to_explore].ori === 1) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori + 1, 3) })
-              } else if (cube[0][next_to_explore].ori === 2) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori - 1, 3) })
-              }
-            } else { // if borrowed
-              if (cube[0][next_to_explore].ori === 0) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori, 3) })
-              } else if (cube[0][next_to_explore].ori === 1) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori + 1, 3) })
-              } else if (cube[0][next_to_explore].ori === 2) {
-                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori - 1, 3) })
-              }
-            }
-          } else {
-            // TODO: Works fine, but not as intended
-            var ori_pos = id2pos(cube[0], moves[moves.length - 1].pos)
-            if (corner.id === ori_pos) {
-              if (borrow === false) {
-                borrow = true
-                next_to_explore = exploredAll(cube, moves, corner.id) // don't borrow corner.pos itself
-                if (cube[0][next_to_explore].ori === 0) {
-                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori, 3) })
-                } else if (cube[0][next_to_explore].ori === 1) {
-                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori + 1, 3) })
-                } else if (cube[0][next_to_explore].ori === 2) {
-                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori - 1, 3) })
-                }
-              } else { // if borrowed
-                if (cube[0][next_to_explore].ori === 0) {
-                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori, 3) })
-                } else if (cube[0][next_to_explore].ori === 1) {
-                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori + 1, 3) })
-                } else if (cube[0][next_to_explore].ori === 2) {
-                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori - 1, 3) })
-                }
-              }
+          if (corner.id !== 3) {
+            if (corner_state[corner.id] === -1 || corner_state[corner.id] === 2 || corner_state[corner.id] === 0) { // if the pointed corner is borrowed, meaning we have returned it
+              corner_state[corner.id] = 1
 
-            }
-            else {
               if (corner.ori === 0) {
                 moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori, 3) })
               } else if (corner.ori === 1) {
@@ -791,35 +941,94 @@ export default function Home() {
               } else if (corner.ori === 2) {
                 moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
               }
+            } else if (corner_state[corner.id] === 0) {
+              corner_state[corner.id] = 1
+
+              if (corner.ori === 0) {
+                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori, 3) })
+              } else if (corner.ori === 1) {
+                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori + 1, 3) })
+              } else if (corner.ori === 2) {
+                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
+              }
+            } else if (corner_state[corner.id] === 1 || corner_state[corner.id] === 2) { // TODO:why does 2 not handle pointed buffer case?
+              next_to_explore = exploreNext(corner_state) // don't borrow corner.pos itself
+
+              corner_state[next_to_explore] = -1 // borrow this new piece
+              var [_, new_ori] = pos2idori(cube[0], next_to_explore)
+              if (new_ori === 0) {
+                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori, 3) })
+              } else if (new_ori === 1) {
+                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori + 1, 3) })
+              } else if (new_ori === 2) {
+                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori - 1, 3) })
+              }
             }
+
+          } else {
+            next_to_explore = exploreNext(corner_state) // don't borrow corner.pos itself
+
+            corner_state[next_to_explore] = -1 // borrow this new piece
+            var [_, new_ori] = pos2idori(cube[0], next_to_explore)
+            if (new_ori === 0) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori, 3) })
+            } else if (new_ori === 1) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori + 1, 3) })
+            } else if (new_ori === 2) {
+              moves.push({ pos: next_to_explore, ori: mod(new_ori - 1, 3) })
+            }
+
           }
         }
         return corner
       })
-      return genBlindMoves(cube, moves, borrow, ++cnt)
+      return genBlindMoves(cube, moves, corner_state, ++cnt)
     } else {
-      if (borrow === true) {
-        var found = false
-        cube[0].map((corner) => {
-          if (corner.pos === moves[moves.length - 1].pos && !found) {
-            found = true
-            if (corner.ori === 0) {
-              moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori, 3) })
-            } else if (corner.ori === 1) {
-              moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori + 1, 3) })
-            } else if (corner.ori === 2) {
-              moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
-            }
-          }
-        })
-        // console.log("returned:", moves)
-        return moves
-      } else {
-        return moves
-      }
+      return moves
     }
   }
 
+  function oriAtE13(blind_move1, blind_move2, moves) {
+    const target_pos1 = blind_move1.pos
+    const target_pos2 = blind_move2.pos
+
+    var tmpCorners = clonePieces(varCorners)
+    var tmpEdges = clonePieces(varEdges)
+    var tmpCube = [tmpCorners, tmpEdges]
+
+    var ori_ori1, ori_ori2, new_ori1, new_ori2
+    tmpEdges.map((edge) => {
+      if (edge.pos === target_pos1) {
+        ori_ori1 = edge.ori
+      } else if (edge.pos === target_pos2) {
+        ori_ori2 = edge.ori
+      }
+    })
+
+    for (var i = 0; i < moves.length; i++) {
+      tmpCube = move(tmpCorners, tmpEdges, ...move_map[moves[i]], false)
+      tmpCorners = tmpCube[0]
+      tmpEdges = tmpCube[1]
+    }
+
+    tmpEdges.map((edge) => {
+      if (edge.pos === 1) {
+        new_ori1 = edge.ori
+      } else if (edge.pos === 3) {
+        new_ori2 = edge.ori
+      }
+    })
+
+    var diff_ori1 = mod(new_ori1 - ori_ori1, 2);
+    var diff_ori2 = mod(new_ori2 - ori_ori2, 2);
+
+    var oriAtE1 = mod(blind_move1.ori + diff_ori1, 2)
+    var oriAtE3 = mod(blind_move2.ori + diff_ori2, 2)
+
+    // const pair = [oriAtC1, oriAtC2]
+
+    return oriAtE1 * 10 + oriAtE3;
+  }
   // Returns the pointed oris at pos 1 and pos 2
   function oriAtC12(blind_move1, blind_move2, moves) {
     const target_pos1 = blind_move1.pos
@@ -895,23 +1104,23 @@ export default function Home() {
     11: ["R'", "F'", "L", "F", "R", "F'", "L'", "F",], // ori: 1 to 1
     12: ["L", "L", "B", "U", "U", "R'", "D", "R", "U", "U", "R'", "D'", "R", "B'", "L", "L",], // ori: 1 to 2
     20: ["R'", "U", "U", "R'", "D'", "R", "U", "U", "R'", "D", "R", "R",], // ori: 2 to 0
-    21: ["R'", "F'", "L", "F", "R", "F'", "L'", "F",], // ori: 2 to 1
+    21: ["U'", "L'", "U", "R", "U'", "L", "U", "R'",], // ori: 2 to 1
     22: ["F", "F", "U", "U", "R'", "D", "R", "U'", "R'", "D'", "R", "U'", "F", "F",], // ori: 2 to 2
   }
 
-  const edge_algs = [
-    "RUR'U'", // ori: 0 to 0
-    "RUR'U'", // ori: 0 to 1
-    "RUR'U'", // ori: 1 to 0
-    "RUR'U'", // ori: 1 to 1
-  ]
+  const edge_algs = {
+    0: ["R", "R", "U", "R", "U", "R'", "U'", "R'", "U'", "R'", "U", "R'",], // ori: 0 to 0
+    10: ["U'", "L", "F", "R'", "F'", "R", "L'", "U", "R", "U'", "R'", "U"], // ori: 1 to 0
+    1: ["U", "L'", "U'", "L", "U", "L", "R'", "F'", "L'", "F", "R", "U'"], // ori: 0 to 1
+    11: ["R", "L'", "B", "R'", "L", "U", "U", "R", "L'", "B'", "R'", "L"], // ori: 1 to 1
+  }
 
   // takes a string, moves, and execute the corresponding moves 
   function execute(moves) {
     function mv() {
       const next_move = moves.shift()
       var cube = move(varCorners, varEdges, ...move_map[next_move])
-      // console.log("next move:", next_move)
+      console.log("next move:", next_move)
 
       varCorners = cube[0]
       varEdges = cube[1]
@@ -927,7 +1136,8 @@ export default function Home() {
   }
 
   function solve_corners() {
-    var blind_moves = genBlindMoves([varCorners, varEdges], [], false, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
+    var corner_state = genCornerState([varCorners, varEdges])
+    var blind_moves = genBlindMoves([varCorners, varEdges], [], corner_state, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
     if (blind_moves.length % 2 === 0) { // No parity
       var total_moves = []
       for (var i = 0; i < blind_moves.length; i += 2) {
@@ -968,6 +1178,45 @@ export default function Home() {
   }
 
   function solve_edges() {
+    var edge_state = genEdgeState([varCorners, varEdges])
+    var blind_moves = genEdgeBlindMoves([varCorners, varEdges], [], edge_state, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
+    if (blind_moves.length % 2 === 0) { // No parity
+      var total_moves = []
+      for (var i = 0; i < blind_moves.length; i += 2) {
+        var setup_moves = eBFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 2)
+        console.log("setup moves:", setup_moves)
+
+        const e13ori = oriAtE13(blind_moves[i], blind_moves[i + 1], setup_moves)
+        console.log("digit", e13ori)
+        // console.log("second digit:", c12ori[1])
+        // console.log("operation: ", c12ori[0] * 10 + c12ori[1])
+        // console.log("c12ori:", c12ori[0] * 10 + c12ori[1])
+
+        console.log("undo setup moves:", undo(setup_moves))
+        total_moves = total_moves.concat(setup_moves, edge_algs[e13ori], undo(setup_moves))
+      }
+      console.log("Entire moves:", total_moves)
+      execute(total_moves)
+    } else { // parity
+      var total_moves = []
+      for (var i = 0; i < blind_moves.length - 1; i += 2) {
+        console.log("@@#############@@")
+        var setup_moves = eBFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 2)
+        console.log("setup moves:", setup_moves)
+
+        const e13ori = oriAtE13(blind_moves[i], blind_moves[i + 1], setup_moves)
+        console.log("digit", e13ori)
+        // console.log("second digit:", c12ori[1])
+        // console.log("operation: ", c12ori[0] * 10 + c12ori[1])
+        // console.log("c12ori:", c12ori[0] * 10 + c12ori[1])
+
+        console.log("undo setup moves:", undo(setup_moves))
+        total_moves = total_moves.concat(setup_moves, edge_algs[e13ori], undo(setup_moves))
+      }
+      console.log("Entire moves:", total_moves)
+      execute(total_moves)
+
+    }
 
   }
 
@@ -1073,11 +1322,17 @@ export default function Home() {
       event.stopPropagation()
       execute(mvs)
     } else if (event.code === "KeyO") {
-      var blindmoves = genBlindMoves([varCorners, varEdges], [], false, 0)
+      var corner_state = genCornerState([varCorners, varEdges])
+      var blindmoves = genBlindMoves([varCorners, varEdges], [], corner_state, 0)
+      console.log("blindmoves:", blindmoves)
+    } else if (event.code === "KeyE") {
+      var edge_state = genEdgeState([varCorners, varEdges])
+      var blindmoves = genEdgeBlindMoves([varCorners, varEdges], [], edge_state, 0)
       console.log("blindmoves:", blindmoves)
     } else if (event.code === "KeyI") {
       const mvs = scramble()
       execute(mvs)
+      console.log("scramble: ", mvs)
       // console.log(varCorners)
     } else if (event.code === "KeyY") {
       execute([].concat(corner_algs[22], corner_algs[22]))
@@ -1085,7 +1340,11 @@ export default function Home() {
     } else if (event.code === "KeyT") {
       solve_corners()
       // console.log(varCorners)
+    } else if (event.code === "KeyR") {
+      solve_edges()
+      // console.log(varCorners)
     }
+
 
 
     // setKey(event.code)
