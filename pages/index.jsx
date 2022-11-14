@@ -4,6 +4,7 @@ import { Stars, OrbitControls } from '@react-three/drei'
 import Cube3D from '../components/Cube'
 import utilStyles from '../styles/utils.module.css'
 import * as THREE from 'three'
+import next from 'next'
 
 export default function Home() {
 
@@ -39,7 +40,7 @@ export default function Home() {
   const eMat10 = new THREE.Matrix4()
   const eMat11 = new THREE.Matrix4()
 
-  var initialCenters = [
+  const initialCenters = [
     { mat: mMat0, id: 0, pos: 0 },
     { mat: mMat1, id: 1, pos: 1 },
     { mat: mMat2, id: 2, pos: 2 },
@@ -48,7 +49,7 @@ export default function Home() {
     { mat: mMat5, id: 5, pos: 5 }
   ]
 
-  var initialCorners = [
+  const initialCorners = [
     { mat: cMat0, ori: 0, id: 0, pos: 0 },
     { mat: cMat1, ori: 0, id: 1, pos: 1 },
     { mat: cMat2, ori: 0, id: 2, pos: 2 },
@@ -59,7 +60,7 @@ export default function Home() {
     { mat: cMat7, ori: 0, id: 7, pos: 7 }
   ]
 
-  var initialEdges = [
+  const initialEdges = [
     { mat: eMat0, ori: 0, id: 0, pos: 0 },
     { mat: eMat1, ori: 0, id: 1, pos: 1 },
     { mat: eMat2, ori: 0, id: 2, pos: 2 },
@@ -74,19 +75,19 @@ export default function Home() {
     { mat: eMat11, ori: 0, id: 11, pos: 11 }
   ]
 
-  var move_map = {
-    "U": [[0, 1, 2, 3], [0, 1, 2, 3], "y", "negative", 0],
-    "U'": [[0, 1, 2, 3], [0, 1, 2, 3], "y", "positive", 0],
-    "D": [[4, 5, 6, 7], [4, 5, 6, 7], "y", "positive", 1],
-    "D'": [[4, 5, 6, 7], [4, 5, 6, 7], "y", "negative", 1],
-    "R": [[3, 2, 6, 7], [3, 11, 7, 8], "x", "negative", 5],
-    "R'": [[3, 2, 6, 7], [3, 11, 7, 8], "x", "positive", 5],
-    "F": [[0, 3, 7, 4], [0, 8, 4, 9], "z", "negative", 2],
-    "F'": [[0, 3, 7, 4], [0, 8, 4, 9], "z", "positive", 2],
-    "L": [[0, 1, 5, 4], [1, 10, 5, 9], "x", "positive", 3],
-    "L'": [[4, 0, 1, 5], [1, 10, 5, 9], "x", "negative", 3],
-    "B": [[1, 2, 6, 5], [11, 6, 10, 2], "z", "positive", 4],
-    "B'": [[1, 2, 6, 5], [11, 6, 10, 2], "z", "negative", 4]
+  const move_map = {
+    "U": [[0, 1, 2, 3], [0, 1, 2, 3], "y", "negative", 0, false],
+    "U'": [[0, 1, 2, 3], [0, 1, 2, 3], "y", "positive", 0, false],
+    "D": [[4, 5, 6, 7], [4, 5, 6, 7], "y", "positive", 1, false],
+    "D'": [[4, 5, 6, 7], [4, 5, 6, 7], "y", "negative", 1, false],
+    "R": [[3, 2, 6, 7], [3, 11, 7, 8], "x", "negative", 5, false],
+    "R'": [[3, 2, 6, 7], [3, 11, 7, 8], "x", "positive", 5, false],
+    "L": [[4, 0, 1, 5], [1, 10, 5, 9], "x", "positive", 3, false],
+    "L'": [[4, 0, 1, 5], [1, 10, 5, 9], "x", "negative", 3, false],
+    "F": [[0, 3, 7, 4], [0, 8, 4, 9], "z", "negative", 2, false],
+    "F'": [[0, 3, 7, 4], [0, 8, 4, 9], "z", "positive", 2, false],
+    "B": [[1, 2, 6, 5], [2, 11, 6, 10], "z", "positive", 4, true],
+    "B'": [[1, 2, 6, 5], [2, 11, 6, 10], "z", "negative", 4, true],
   }
 
 
@@ -302,88 +303,112 @@ export default function Home() {
     return nextCorners
   }
 
-  function move(varCorners, varEdges, corners_id, edges_id, axis, direction, center_id, yes_mat = true) {
-    if (yes_mat) {
-      if (direction === "positive") {
-        const angle = Math.PI / 2  // clockwise 90 degrees
-        const rMatX = new THREE.Matrix4().makeRotationX(angle)
-        const rMatY = new THREE.Matrix4().makeRotationY(angle)
-        const rMatZ = new THREE.Matrix4().makeRotationZ(angle)
-        if (axis === "y") {
+  function move(mVarCorners, varEdges, corners_id, edges_id, axis, direction, center_id, is_b, yes_mat = true) {
+    if (direction === "positive") {
+      const angle = Math.PI / 2  // clockwise 90 degrees
+      const rMatX = new THREE.Matrix4().makeRotationX(angle)
+      const rMatY = new THREE.Matrix4().makeRotationY(angle)
+      const rMatZ = new THREE.Matrix4().makeRotationZ(angle)
+      if (axis === "y") {
 
+        if (yes_mat) {
           for (var i in corners_id) {
             rotate3Dpieces("corners", corners_id[i], rMatY)
             rotate3Dpieces("edges", edges_id[i], rMatY)
           }
-
-          // oris remain unchanged
           rotate3Dpieces("centers", center_id, rMatY)
-        } else if (axis === "x") {
+
+        }
+
+        // oris remain unchanged
+      } else if (axis === "x") {
+        if (yes_mat) {
           for (var i in corners_id) {
             rotate3Dpieces("corners", corners_id[i], rMatX)
             rotate3Dpieces("edges", edges_id[i], rMatX)
           }
-          // set oris
-          varCorners = orientCorners(varCorners, corners_id[0], "positive")
-          varCorners = orientCorners(varCorners, corners_id[2], "positive")
-          varCorners = orientCorners(varCorners, corners_id[1], "negative")
-          varCorners = orientCorners(varCorners, corners_id[3], "negative")
-
           rotate3Dpieces("centers", center_id, rMatX)
+        }
+        // set oris
+        mVarCorners = orientCorners(mVarCorners, corners_id[0], "positive")
+        mVarCorners = orientCorners(mVarCorners, corners_id[2], "positive")
+        mVarCorners = orientCorners(mVarCorners, corners_id[1], "negative")
+        mVarCorners = orientCorners(mVarCorners, corners_id[3], "negative")
 
-        } else if (axis === "z") {
+
+      } else if (axis === "z") {
+        if (yes_mat) {
           for (var i in corners_id) {
             rotate3Dpieces("corners", corners_id[i], rMatZ)
             rotate3Dpieces("edges", edges_id[i], rMatZ)
           }
-          varCorners = orientCorners(varCorners, corners_id[0], "positive")
-          varCorners = orientCorners(varCorners, corners_id[2], "positive")
-          varCorners = orientCorners(varCorners, corners_id[1], "negative")
-          varCorners = orientCorners(varCorners, corners_id[3], "negative")
-
           rotate3Dpieces("centers", center_id, rMatZ)
         }
-      } else if (direction === "negative") {
-        const angle = - Math.PI / 2  // clockwise 90 degrees
-        const rMatX = new THREE.Matrix4().makeRotationX(angle)
-        const rMatY = new THREE.Matrix4().makeRotationY(angle)
-        const rMatZ = new THREE.Matrix4().makeRotationZ(angle)
-        if (axis === "y") {
+        if (!is_b) {
+          mVarCorners = orientCorners(mVarCorners, corners_id[0], "positive")
+          mVarCorners = orientCorners(mVarCorners, corners_id[2], "positive")
+          mVarCorners = orientCorners(mVarCorners, corners_id[1], "negative")
+          mVarCorners = orientCorners(mVarCorners, corners_id[3], "negative")
+        } else {
+          mVarCorners = orientCorners(mVarCorners, corners_id[0], "negative")
+          mVarCorners = orientCorners(mVarCorners, corners_id[2], "negative")
+          mVarCorners = orientCorners(mVarCorners, corners_id[1], "positive")
+          mVarCorners = orientCorners(mVarCorners, corners_id[3], "positive")
+        }
+
+      }
+    } else if (direction === "negative") {
+      const angle = - Math.PI / 2  // clockwise 90 degrees
+      const rMatX = new THREE.Matrix4().makeRotationX(angle)
+      const rMatY = new THREE.Matrix4().makeRotationY(angle)
+      const rMatZ = new THREE.Matrix4().makeRotationZ(angle)
+      if (axis === "y") {
+        if (yes_mat) {
           for (var i in corners_id) {
             rotate3Dpieces("corners", corners_id[i], rMatY)
             rotate3Dpieces("edges", edges_id[i], rMatY)
           }
-
           rotate3Dpieces("centers", center_id, rMatY)
-        } else if (axis === "x") {
+        }
+
+      } else if (axis === "x") {
+        if (yes_mat) {
           for (var i in corners_id) {
             rotate3Dpieces("corners", corners_id[i], rMatX)
             rotate3Dpieces("edges", edges_id[i], rMatX)
           }
-          rotate3Dpieces("centers", center_id, rMatX)
 
-          varCorners = orientCorners(varCorners, corners_id[0], "positive")
-          varCorners = orientCorners(varCorners, corners_id[2], "positive")
-          varCorners = orientCorners(varCorners, corners_id[1], "negative")
-          varCorners = orientCorners(varCorners, corners_id[3], "negative")
-        } else if (axis === "z") {
+          rotate3Dpieces("centers", center_id, rMatX)
+        }
+        mVarCorners = orientCorners(mVarCorners, corners_id[0], "positive")
+        mVarCorners = orientCorners(mVarCorners, corners_id[2], "positive")
+        mVarCorners = orientCorners(mVarCorners, corners_id[1], "negative")
+        mVarCorners = orientCorners(mVarCorners, corners_id[3], "negative")
+      } else if (axis === "z") {
+        if (yes_mat) {
           for (var i in corners_id) {
             rotate3Dpieces("corners", corners_id[i], rMatZ)
             rotate3Dpieces("edges", edges_id[i], rMatZ)
           }
           rotate3Dpieces("centers", center_id, rMatZ)
-
-          varCorners = orientCorners(varCorners, corners_id[0], "positive")
-          varCorners = orientCorners(varCorners, corners_id[2], "positive")
-          varCorners = orientCorners(varCorners, corners_id[1], "negative")
-          varCorners = orientCorners(varCorners, corners_id[3], "negative")
+        }
+        if (!is_b) {
+          mVarCorners = orientCorners(mVarCorners, corners_id[0], "positive")
+          mVarCorners = orientCorners(mVarCorners, corners_id[2], "positive")
+          mVarCorners = orientCorners(mVarCorners, corners_id[1], "negative")
+          mVarCorners = orientCorners(mVarCorners, corners_id[3], "negative")
+        } else {
+          mVarCorners = orientCorners(mVarCorners, corners_id[0], "negative")
+          mVarCorners = orientCorners(mVarCorners, corners_id[2], "negative")
+          mVarCorners = orientCorners(mVarCorners, corners_id[1], "positive")
+          mVarCorners = orientCorners(mVarCorners, corners_id[3], "positive")
         }
       }
     }
 
-    varCorners = cornerArraySwap(varCorners, corners_id, direction)
+    mVarCorners = cornerArraySwap(mVarCorners, corners_id, direction)
     varEdges = edgeArraySwap(varEdges, edges_id, direction)
-    return [varCorners, varEdges]
+    return [mVarCorners, varEdges]
   }
 
   // None 3D move. Returns a list of corners and a list of TODO:edges
@@ -617,7 +642,6 @@ export default function Home() {
               v = parents.get(v)
             }
 
-            console.log(moves)
             return moves
           }
         }
@@ -626,78 +650,320 @@ export default function Home() {
     return []
   }
 
-  // Returns the pointed oris at pos 1 and pos 2
-  function oriAtC12(blind_moves, moves) {
-    var tmpCorners = clone(varCorners)
-    var ori_ori_1 = tmpCorners[blind_moves[0][0]]; // TODO: if index == blind_moves[i], the original orientation at blind_moves pos
-    var ori_ori_2 = tmpCorners[blind_moves[1][0]]; // TODO: if index == blind_moves[i]
+  function exploredAll(cube, moves, explored_id = -1) {
+    var corner_explored = [false, false, false, true, false, false, false, false]
+    if (explored_id !== -1) {
+      corner_explored[explored_id] = true
+    }
 
-    var corner2 = ori_corners("R", tmpCorners)
+    for (var i = 0; i < moves.length; i++) {
+      corner_explored[moves[i].pos] = true
+    }
 
-    var diff_ori_1 = tmpCorners[blind_moves[0][0]] - ori_ori_1;
-    var diff_ori_2 = tmpCorners[blind_moves[1][0]] - ori_ori_2;
 
-    var oriAtC1 = blind_moves[0]
-    var oriAtC2 = blind_moves[1]
 
-    var pair = [0, 1]
-    return pair;
+    cube[0].map((corner) => {
+      if (corner.pos === corner.id) {
+        corner_explored[corner.id] = true
+      }
+      return corner
+    })
+
+    for (var i = 0; i < 8; i++) {
+      if (corner_explored[i] === false) {
+        return i
+      }
+    }
+    return -1
   }
 
+  function pos2id(corners, pos) {
+    var id = -1
+    corners.map((corner) => {
+      if (corner.pos === pos) {
+        id = corner.id
+      }
+    })
+
+    return id
+  }
+
+  function id2pos(corners, id) {
+    var retval = -1
+    corners.map((corner) => {
+      if (corner.id === id) {
+        retval = corner.pos
+      }
+    })
+
+    return retval
+  }
+
+  // TODO: for edges too
+  function genBlindMoves(cube, moves, borrow, cnt) {
+    if (moves.length === 0) { // start from the buffer
+      cube[0].map((corner) => {
+        if (corner.pos === 3) {
+          if (corner.id !== 3) {
+            if (corner.ori === 0) {
+              moves.push({ pos: corner.id, ori: mod(corner.ori, 3) })
+            } else if (corner.ori === 1) {
+              moves.push({ pos: corner.id, ori: mod(corner.ori + 1, 3) })
+            } else if (corner.ori === 2) {
+              moves.push({ pos: corner.id, ori: mod(corner.ori - 1, 3) })
+            }
+          } else {
+            next_to_explore = exploredAll(cube, moves, corner.pos) // don't borrow corner.pos itself
+            if (next_to_explore === -1) {
+              return []
+            } else {
+              borrow = true
+              if (cube[0][next_to_explore].ori === 0) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori, 3) })
+              } else if (cube[0][next_to_explore].ori === 1) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + 1, 3) })
+              } else if (cube[0][next_to_explore].ori === 2) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori - 1, 3) })
+              }
+            }
+          }
+        }
+        return corner
+      })
+    }
+
+    var next_to_explore = exploredAll(cube, moves)
+    if (next_to_explore !== -1 && cnt < 10) {
+      var found = false
+      cube[0].map((corner) => {
+        if (corner.pos === moves[moves.length - 1].pos && !found) {
+          found = true
+          if (corner.id === 3) { // need to borrow when it points at the buffer
+            if (borrow === false) {
+              borrow = true
+              next_to_explore = exploredAll(cube, moves, corner.pos) // don't borrow corner.pos itself
+              if (cube[0][next_to_explore].ori === 0) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori, 3) })
+              } else if (cube[0][next_to_explore].ori === 1) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori + 1, 3) })
+              } else if (cube[0][next_to_explore].ori === 2) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori - 1, 3) })
+              }
+            } else { // if borrowed
+              if (cube[0][next_to_explore].ori === 0) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori, 3) })
+              } else if (cube[0][next_to_explore].ori === 1) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori + 1, 3) })
+              } else if (cube[0][next_to_explore].ori === 2) {
+                moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori - 1, 3) })
+              }
+            }
+          } else {
+            // TODO: Works fine, but not as intended
+            var ori_pos = id2pos(cube[0], moves[moves.length - 1].pos)
+            if (corner.id === ori_pos) {
+              if (borrow === false) {
+                borrow = true
+                next_to_explore = exploredAll(cube, moves, corner.id) // don't borrow corner.pos itself
+                if (cube[0][next_to_explore].ori === 0) {
+                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori, 3) })
+                } else if (cube[0][next_to_explore].ori === 1) {
+                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori + 1, 3) })
+                } else if (cube[0][next_to_explore].ori === 2) {
+                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori - 1, 3) })
+                }
+              } else { // if borrowed
+                if (cube[0][next_to_explore].ori === 0) {
+                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori, 3) })
+                } else if (cube[0][next_to_explore].ori === 1) {
+                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori + 1, 3) })
+                } else if (cube[0][next_to_explore].ori === 2) {
+                  moves.push({ pos: cube[0][next_to_explore].id, ori: mod(cube[0][next_to_explore].ori + moves[moves.length - 1].ori - 1, 3) })
+                }
+              }
+
+            }
+            else {
+              if (corner.ori === 0) {
+                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori, 3) })
+              } else if (corner.ori === 1) {
+                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori + 1, 3) })
+              } else if (corner.ori === 2) {
+                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
+              }
+            }
+          }
+        }
+        return corner
+      })
+      return genBlindMoves(cube, moves, borrow, ++cnt)
+    } else {
+      if (borrow === true) {
+        var found = false
+        cube[0].map((corner) => {
+          if (corner.pos === moves[moves.length - 1].pos && !found) {
+            found = true
+            if (corner.ori === 0) {
+              moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori, 3) })
+            } else if (corner.ori === 1) {
+              moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori + 1, 3) })
+            } else if (corner.ori === 2) {
+              moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
+            }
+          }
+        })
+        // console.log("returned:", moves)
+        return moves
+      } else {
+        return moves
+      }
+    }
+  }
+
+  // Returns the pointed oris at pos 1 and pos 2
+  function oriAtC12(blind_move1, blind_move2, moves) {
+    const target_pos1 = blind_move1.pos
+    const target_pos2 = blind_move2.pos
+
+    var tmpCorners = clonePieces(varCorners)
+    var tmpEdges = clonePieces(varEdges)
+    var tmpCube = [tmpCorners, tmpEdges]
+
+    var ori_ori1, ori_ori2, new_ori1, new_ori2
+    tmpCorners.map((corner) => {
+      if (corner.pos === target_pos1) {
+        ori_ori1 = corner.ori
+      } else if (corner.pos === target_pos2) {
+        ori_ori2 = corner.ori
+      }
+    })
+
+    for (var i = 0; i < moves.length; i++) {
+      tmpCube = move(tmpCorners, tmpEdges, ...move_map[moves[i]], false)
+      tmpCorners = tmpCube[0]
+      tmpEdges = tmpCube[1]
+    }
+
+    tmpCorners.map((corner) => {
+      if (corner.pos === 1) {
+        new_ori1 = corner.ori
+      } else if (corner.pos === 2) {
+        new_ori2 = corner.ori
+      }
+    })
+
+    var diff_ori1 = mod(new_ori1 - ori_ori1, 3);
+    var diff_ori2 = mod(new_ori2 - ori_ori2, 3);
+
+    var oriAtC1 = mod(blind_move1.ori + diff_ori1, 3)
+    var oriAtC2 = mod(blind_move2.ori + diff_ori2, 3)
+
+    // const pair = [oriAtC1, oriAtC2]
+
+    return oriAtC1 * 10 + oriAtC2;
+  }
+
+  const undo_moves = {
+    "R": "R'",
+    "R'": "R",
+    "U": "U'",
+    "U'": "U",
+    "L": "L'",
+    "L'": "L",
+    "D": "D'",
+    "D'": "D",
+    "B": "B'",
+    "B'": "B",
+    "F": "F'",
+    "F'": "F",
+  }
   // return the undone setup moves
   function undo(moves) {
-    var reversedMoves
+    var reversedMoves = []
+    for (var i = moves.length - 1; i >= 0; i--) {
+      reversedMoves.push(undo_moves[moves[i]])
+    }
     return reversedMoves
   }
 
   // basic commutator algs for corners at pos 1 and 2. Commute from pos 1 to pos 2.
-  var corner_algs = {
-    0: "RUR'U'", // ori: 0 to 0
-    1: "RUR'U'", // ori: 0 to 1
-    2: "RUR'U'", // ori: 0 to 2
-    10: "RUR'U'", // ori: 1 to 0
-    11: "RUR'U'", // ori: 1 to 1
-    12: "RUR'U'", // ori: 1 to 2
-    20: "RUR'U'", // ori: 2 to 0
-    21: "RUR'U'", // ori: 2 to 1
-    22: "RUR'U'", // ori: 2 to 2
+  const corner_algs = {
+    0: ["R'", "F", "R'", "B", "B", "R", "F'", "R'", "B", "B", "R", "R",], // ori: 0 to 0
+    1: ["R'", "D'", "U", "U", "R'", "D", "R", "U", "U", "R'", "D'", "R", "D", "R",], // ori: 0 to 1
+    2: ["B", "D", "D", "U", "U", "R'", "D'", "R", "U", "U", "R'", "D", "R", "D", "D", "B'",], // ori: 0 to 2
+    10: ["B'", "R'", "F'", "R", "B", "R'", "F", "R",], // ori: 1 to 0
+    11: ["R'", "F'", "L", "F", "R", "F'", "L'", "F",], // ori: 1 to 1
+    12: ["L", "L", "B", "U", "U", "R'", "D", "R", "U", "U", "R'", "D'", "R", "B'", "L", "L",], // ori: 1 to 2
+    20: ["R'", "U", "U", "R'", "D'", "R", "U", "U", "R'", "D", "R", "R",], // ori: 2 to 0
+    21: ["R'", "F'", "L", "F", "R", "F'", "L'", "F",], // ori: 2 to 1
+    22: ["F", "F", "U", "U", "R'", "D", "R", "U'", "R'", "D'", "R", "U'", "F", "F",], // ori: 2 to 2
   }
 
-  var edge_algs = [
+  const edge_algs = [
     "RUR'U'", // ori: 0 to 0
     "RUR'U'", // ori: 0 to 1
     "RUR'U'", // ori: 1 to 0
     "RUR'U'", // ori: 1 to 1
   ]
 
-  // takes a string, moves, and execute the corresponding moves I'm so good!!!!!!!!
+  // takes a string, moves, and execute the corresponding moves 
   function execute(moves) {
     function mv() {
-      var cube = move(varCorners, varEdges, ...move_map[moves.shift()])
+      const next_move = moves.shift()
+      var cube = move(varCorners, varEdges, ...move_map[next_move])
+      // console.log("next move:", next_move)
+
       varCorners = cube[0]
       varEdges = cube[1]
       animate()
-      execute(moves)
+      return execute(moves)
     }
 
     if (moves.length > 0) {
-      setTimeout(mv, 1000)
+      setTimeout(mv, 50)
     }
 
     return mv
   }
 
   function solve_corners() {
-    // TODO: generate blind moves
-    var blind_moves = [[7, 0], [4, 1]] // list of pairs. First element being the target pos (aka id) and second the pointed_ori
+    var blind_moves = genBlindMoves([varCorners, varEdges], [], false, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
     if (blind_moves.length % 2 === 0) { // No parity
+      var total_moves = []
       for (var i = 0; i < blind_moves.length; i += 2) {
-        var setup_moves = BFS(blind_moves[i][0], blind_moves[i + 1][0], 1, 2)
-        execute(setup_moves) // TODO: execute this first, remember update the pointed_ori with ori_ori
-        var pointed_ori_1 = varCorners[blind_moves[i]]
-        var pointed_ori_2 = varCorners[blind_moves[i + 1]]
-        execute(undo(setup_moves)) // TODO: execute this first, remember update the pointed_ori with ori_ori
+        var setup_moves = BFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 2)
+        console.log("setup moves:", setup_moves)
+
+        const c12ori = oriAtC12(blind_moves[i], blind_moves[i + 1], setup_moves)
+        console.log("digit", c12ori)
+        // console.log("second digit:", c12ori[1])
+        // console.log("operation: ", c12ori[0] * 10 + c12ori[1])
+        // console.log("c12ori:", c12ori[0] * 10 + c12ori[1])
+
+        console.log("undo setup moves:", undo(setup_moves))
+        total_moves = total_moves.concat(setup_moves, corner_algs[c12ori], undo(setup_moves))
       }
+      console.log("Entire moves:", total_moves)
+      execute(total_moves)
+    } else { // parity
+      var total_moves = []
+      for (var i = 0; i < blind_moves.length - 1; i += 2) {
+        console.log("@@#############@@")
+        var setup_moves = BFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 2)
+        console.log("setup moves:", setup_moves)
+
+        const c12ori = oriAtC12(blind_moves[i], blind_moves[i + 1], setup_moves)
+        console.log("digit", c12ori)
+        // console.log("second digit:", c12ori[1])
+        // console.log("operation: ", c12ori[0] * 10 + c12ori[1])
+        // console.log("c12ori:", c12ori[0] * 10 + c12ori[1])
+
+        console.log("undo setup moves:", undo(setup_moves))
+        total_moves = total_moves.concat(setup_moves, corner_algs[c12ori], undo(setup_moves))
+      }
+      console.log("Entire moves:", total_moves)
+      execute(total_moves)
+
     }
   }
 
@@ -705,6 +971,17 @@ export default function Home() {
 
   }
 
+  function scramble(length = 20) {
+    const moves = [
+      "R", "R'", "U", "U'", "F", "F'", "D", "D'", "B", "B'", "L", "L'"
+    ]
+    var res = []
+
+    for (var i = 0; i < length; i++) {
+      res.push(moves[Math.floor(Math.random() * moves.length)])
+    }
+    return res
+  }
 
 
   // handle keys
@@ -795,8 +1072,22 @@ export default function Home() {
       event.preventDefault()
       event.stopPropagation()
       execute(mvs)
+    } else if (event.code === "KeyO") {
+      var blindmoves = genBlindMoves([varCorners, varEdges], [], false, 0)
+      console.log("blindmoves:", blindmoves)
+    } else if (event.code === "KeyI") {
+      const mvs = scramble()
+      execute(mvs)
+      // console.log(varCorners)
+    } else if (event.code === "KeyY") {
+      execute([].concat(corner_algs[22], corner_algs[22]))
+      // console.log(varCorners)
+    } else if (event.code === "KeyT") {
+      solve_corners()
       // console.log(varCorners)
     }
+
+
     // setKey(event.code)
   }
 
