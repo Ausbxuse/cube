@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef, useReducer } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Stars, OrbitControls } from '@react-three/drei'
-import Cube3D from '../components/Cube'
+import Cube3D from '../components/Cube3D'
+import Info from '../components/info'
+import Nav from '../components/nav'
 import utilStyles from '../styles/utils.module.css'
 import * as THREE from 'three'
-import next from 'next'
+import * as helper from '../components/helper'
+// import next from 'next'
 
 // TODO: rotation does not work with solver
 // TODO: key/shortcut info menu
@@ -102,17 +105,14 @@ export default function Home() {
     "B'": [[1, 2, 6, 5], [2, 11, 6, 10], "z", "negative", 4, true],
   }
 
-
   const [centers, setCenters] = useState(initialCenters)
   const [corners, setCorners] = useState(initialCorners)
   const [edges, setEdges] = useState(initialEdges)
 
   var varCorners = corners, varEdges = edges, varCenters = centers
 
-  function mod(n, m) {
-    return ((n % m) + m) % m;
-  }
 
+  // ?
   function centerArraySwap(centers, pieces_idx, direction) {
     const nextCenters = centers.map((center) => {
       if (direction === "positive") {
@@ -137,16 +137,28 @@ export default function Home() {
             pos: pieces_idx[0]
           }
         }
-
         else return center;
       } else if (direction === "negative") {
-        // TODO: copy above and modify alittle
-        if (center.pos == pieces_idx[i]) {
+        if (center.pos == pieces_idx[0]) {
           return {
             ...center,
-            pos: pieces_idx[mod((i - 1), 4)]
+            pos: pieces_idx[3]
           }
-
+        } else if (center.pos == pieces_idx[1]) {
+          return {
+            ...center,
+            pos: pieces_idx[0]
+          }
+        } else if (center.pos == pieces_idx[2]) {
+          return {
+            ...center,
+            pos: pieces_idx[1]
+          }
+        } else if (center.pos == pieces_idx[3]) {
+          return {
+            ...center,
+            pos: pieces_idx[2]
+          }
         } else return center;
       }
     })
@@ -154,6 +166,7 @@ export default function Home() {
     return nextCenters
   }
 
+  // does not do it in place
   function edgeArraySwap(edges, pieces_idx, direction) {
     const nextEdges = edges.map((edge) => {
       if (direction === "negative") {
@@ -203,9 +216,9 @@ export default function Home() {
       }
     })
     return nextEdges
-
   }
 
+  // does not do it in place
   function cornerArraySwap(corners, pieces_idx, direction) {
     const nextCorners = corners.map((corner) => {
       if (direction === "negative") {
@@ -258,8 +271,7 @@ export default function Home() {
     return nextCorners
   }
 
-
-
+  // Corner, Edge: in place
   function rotate3Dpieces(piece_group_name, id, r_mat) {
     if (piece_group_name === "corners") {
       const nextCorners = varCorners.map((corner) => {
@@ -294,20 +306,21 @@ export default function Home() {
     }
   }
 
+  // Does not do it inplace
   function orientCorners(corners, idx, direction) {
     const nextCorners = corners.map((corner) => {
       if (direction === "positive") {
         if (corner.pos == idx) {
           return {
             ...corner,
-            ori: mod((corner.ori + 1), 3)
+            ori: helper.mod((corner.ori + 1), 3)
           }
         } else return corner;
       } else {
         if (corner.pos == idx) {
           return {
             ...corner,
-            ori: mod((corner.ori - 1), 3)
+            ori: helper.mod((corner.ori - 1), 3)
           }
         } else return corner;
       }
@@ -315,20 +328,21 @@ export default function Home() {
     return nextCorners
   }
 
+  // Does not do it inplace
   function orientEdges(edges, idx, direction) {
     const nextEdges = edges.map((edge) => {
       if (direction === "positive") {
         if (edge.pos == idx) {
           return {
             ...edge,
-            ori: mod((edge.ori + 1), 2)
+            ori: helper.mod((edge.ori + 1), 2)
           }
         } else return edge;
       } else {
         if (edge.pos == idx) {
           return {
             ...edge,
-            ori: mod((edge.ori - 1), 2)
+            ori: helper.mod((edge.ori - 1), 2)
           }
         } else return edge;
       }
@@ -336,6 +350,7 @@ export default function Home() {
     return nextEdges
   }
 
+  // ALL: does not do it in place
   function move(mVarCorners, mVarEdges, corners_id, edges_id, axis, direction, center_id, is_b, yes_mat = true) {
     if (direction === "positive") {
       const angle = Math.PI / 2  // clockwise 90 degrees
@@ -499,6 +514,7 @@ export default function Home() {
     }
   }
 
+  // not in place
   function U(cube, yes_mat = true) {
     return move(cube[0], cube[1], ...move_map["U"], yes_mat)
   }
@@ -547,6 +563,7 @@ export default function Home() {
     return move(cube[0], cube[1], ...move_map["L'"], yes_mat)
   }
 
+  // Cube: in place
   function Reset() {
     setCenters(initialCenters)
     setCorners(initialCorners)
@@ -554,6 +571,7 @@ export default function Home() {
     setMovesString("Moves: ")
   }
 
+  // Cube: in place
   function animate() {
     setCenters(varCenters)
     setCorners(varCorners)
@@ -561,6 +579,7 @@ export default function Home() {
   }
 
 
+  // helper
   function clonePieces(pieces) {
     var res = []
     for (let map of pieces) {
@@ -573,6 +592,7 @@ export default function Home() {
     return res
   }
 
+  // helper
   function cornerEqual(cube1, cube2) {
     for (let map_id in cube1[0]) {
       for (let key in cube1[0][map_id]) {
@@ -589,6 +609,7 @@ export default function Home() {
     return true
   }
 
+  // helper
   function edgeEqual(cube1, cube2) {
     for (let map_id in cube1[1]) {
       for (let key in cube1[1][map_id]) {
@@ -605,6 +626,7 @@ export default function Home() {
     return true
   }
 
+  // does not do it in place
   // returns the one-step-away neighbors using B, D, or L move
   function neighbors(cube) {
     return [B(cube, false), D(cube, false), L(cube, false)]
@@ -614,9 +636,9 @@ export default function Home() {
     return [B(cube, false), D(cube, false), L(cube, false), R(cube, false)]
   }
 
+  // not in place
   // Return the setup moves required to the intended location using only {B,D,L}. 
   // piece1 and 2 are both a pair of numbers. First one indicates the target location, second indicates target orientation
-
   function match_2pos(cube, id1, id2, target_pos1, target_pos2) {
     var actual1_id = -2, actual2_id = -2
     cube[0].map((corner) => {
@@ -632,6 +654,7 @@ export default function Home() {
     return (id1 === actual1_id && id2 === actual2_id)
   }
 
+  // not in place
   function match_twisted_2pos(cube, id1, target_pos1) {
     var actual1_id = -2
     var actual_ori = -1
@@ -647,6 +670,7 @@ export default function Home() {
     return (id1 === actual1_id && actual_ori === 0)
   }
 
+  // not in place
   function match_flipped_2pos(cube, id1, target_pos1) {
     var actual1_id = -2
     cube[1].map((edge) => {
@@ -661,6 +685,7 @@ export default function Home() {
     return (id1 === actual1_id)
   }
 
+  // not in place
   function cMatch_2pos(cube, id1, target_pos1) {
     var actual1_id = -1, actual_ori = -1
     cube[0].map((corner) => {
@@ -675,6 +700,7 @@ export default function Home() {
     return (id1 === actual1_id && actual_ori === 0)
   }
 
+  // not in place
   function eMatch_2pos(cube, id1, id2, target_pos1, target_pos2) {
     var actual1_id = -2, actual2_id = -2
     cube[1].map((edge) => {
@@ -690,6 +716,7 @@ export default function Home() {
     return (id1 === actual1_id && id2 === actual2_id)
   }
 
+  // not in place
   function eBFS(cube, current_pos1, current_pos2, target_pos1, target_pos2) {
     var pos1_id = -1, pos2_id = -1
     cube[1].map((corner) => {
@@ -746,6 +773,9 @@ export default function Home() {
     }
     return []
   }
+
+
+  // not in place
   // TODO: handle already solved state
   function BFS(cube, current_pos1, current_pos2, target_pos1, target_pos2) {
     var pos1_id = -1, pos2_id = -1
@@ -800,6 +830,7 @@ export default function Home() {
     return []
   }
 
+  // not in place
   function twistedBFS(cube, current_pos) { // the pos is its id
 
     var frontier = []
@@ -843,6 +874,7 @@ export default function Home() {
     return []
   }
 
+  // not in place
   function flippedBFS(cube, current_pos) { // the pos is its id
 
     var frontier = []
@@ -889,6 +921,7 @@ export default function Home() {
     return []
   }
 
+  // not in place
   function cParityBFS(cube, current_pos) { //corner parity that mvoes current_pos to 2 with ori:0
 
     var frontier = []
@@ -932,6 +965,7 @@ export default function Home() {
     return []
   }
 
+  // Corner:
   function genCornerState(cube) {
     var corner_state = [0, 0, 0, 2, 0, 0, 0, 0] // 0: unsolved 1:solved -1:borrowed 2: buffer
 
@@ -944,6 +978,7 @@ export default function Home() {
     return corner_state
   }
 
+  // Edge:
   function genEdgeState(cube) {
     var edge_state = [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // 0: unsolved 1:solved -1:borrowed 2: buffer
 
@@ -968,6 +1003,7 @@ export default function Home() {
     return -1
   }
 
+  // helper
   function pos2idori(pieces, pos) {
     var id = -1
     var ori = -1
@@ -981,17 +1017,7 @@ export default function Home() {
     return [id, ori]
   }
 
-  function id2pos(pieces, id) {
-    var retval = -1
-    pieces.map((piece) => {
-      if (piece.id === id) {
-        retval = piece.pos
-      }
-    })
-
-    return retval
-  }
-
+  // Cube: in place
   function checkSolved(piece_state) {
     for (var i = 0; i < piece_state.length; i++) {
       if (piece_state[i] === 0 || piece_state[i] === -1) {
@@ -1001,6 +1027,7 @@ export default function Home() {
     return true
   }
 
+  // Edge: in place
   function genEdgeBlindMoves(cube, moves, edge_state, cnt, parity) {
     // var edge_state = [0,0,0,0,0,0,0,0] // 0: unsolved 1:solved -1:borrowed
 
@@ -1014,27 +1041,27 @@ export default function Home() {
         if (edge.pos === 0) {
           if (!parity) {
             if (edge.id !== 0) {
-              moves.push({ pos: edge.id, ori: mod(edge.ori, 2) })
+              moves.push({ pos: edge.id, ori: helper.mod(edge.ori, 2) })
               edge_state[edge.id] = 1
             } else { // when the buffer is already solved
               next_to_explore = exploreNext(edge_state) // don't borrow edge.pos itself
               edge_state[next_to_explore] = -1 // borrow this new piece
               var [_, new_ori] = pos2idori(cube[1], next_to_explore)
-              moves.push({ pos: next_to_explore, ori: mod(new_ori, 2) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori, 2) })
             }
           } else {
             edge_state[3] = 2
             if (edge.id !== 0 && edge.id !== 3) {
-              moves.push({ pos: edge.id, ori: mod(edge.ori, 2) })
+              moves.push({ pos: edge.id, ori: helper.mod(edge.ori, 2) })
               edge_state[edge.id] = 1
             } else if (edge.id === 0) {
               var [_, new_ori] = pos2idori(cube[1], 3)
-              moves.push({ pos: 3, ori: mod(new_ori, 2) })
+              moves.push({ pos: 3, ori: helper.mod(new_ori, 2) })
             } else { // when the buffer is already solved
               next_to_explore = exploreNext(edge_state) // don't borrow edge.pos itself
               edge_state[next_to_explore] = -1 // borrow this new piece
               var [_, new_ori] = pos2idori(cube[1], next_to_explore)
-              moves.push({ pos: next_to_explore, ori: mod(new_ori, 2) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori, 2) })
             }
 
           }
@@ -1054,13 +1081,13 @@ export default function Home() {
               if (edge_state[edge.id] === -1 || edge_state[edge.id] === 0) { // if the pointed edge is borrowed, meaning we have returned it
                 edge_state[edge.id] = 1
 
-                moves.push({ pos: edge.id, ori: mod(edge.ori + moves[moves.length - 1].ori, 2) })
+                moves.push({ pos: edge.id, ori: helper.mod(edge.ori + moves[moves.length - 1].ori, 2) })
               } else if (edge_state[edge.id] === 1 || edge_state[edge.id] === 2) { // when the buffer borrows, it becomes 1
                 next_to_explore = exploreNext(edge_state) // don't borrow edge.pos itself
 
                 edge_state[next_to_explore] = -1 // borrow this new piece
                 var [_, new_ori] = pos2idori(cube[1], next_to_explore)
-                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori, 2) })
+                moves.push({ pos: next_to_explore, ori: helper.mod(new_ori + moves[moves.length - 1].ori, 2) })
               }
 
             } else {
@@ -1068,7 +1095,7 @@ export default function Home() {
 
               edge_state[next_to_explore] = -1 // borrow this new piece
               var [_, new_ori] = pos2idori(cube[1], next_to_explore)
-              moves.push({ pos: next_to_explore, ori: mod(new_ori, 2) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori, 2) })
             }
           } else {
             edge_state[3] = 2
@@ -1076,25 +1103,25 @@ export default function Home() {
               if (edge_state[edge.id] === -1 || edge_state[edge.id] === 0) { // if the pointed edge is borrowed, meaning we have returned it
                 edge_state[edge.id] = 1
 
-                moves.push({ pos: edge.id, ori: mod(edge.ori + moves[moves.length - 1].ori, 2) })
+                moves.push({ pos: edge.id, ori: helper.mod(edge.ori + moves[moves.length - 1].ori, 2) })
               } else if (edge_state[edge.id] === 1 || edge_state[edge.id] === 2) { // when the buffer borrows, it becomes 1
                 next_to_explore = exploreNext(edge_state) // don't borrow edge.pos itself
 
                 edge_state[next_to_explore] = -1 // borrow this new piece
                 var [_, new_ori] = pos2idori(cube[1], next_to_explore)
-                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori, 2) })
+                moves.push({ pos: next_to_explore, ori: helper.mod(new_ori + moves[moves.length - 1].ori, 2) })
               }
 
             } else if (edge.id === 0) {
               var [_, new_ori] = pos2idori(cube[1], 3)
-              moves.push({ pos: 3, ori: mod(new_ori + moves[moves.length - 1].ori, 2) })
+              moves.push({ pos: 3, ori: helper.mod(new_ori + moves[moves.length - 1].ori, 2) })
 
             } else { // if id is 3
               next_to_explore = exploreNext(edge_state) // don't borrow edge.pos itself
 
               edge_state[next_to_explore] = -1 // borrow this new piece
               var [_, new_ori] = pos2idori(cube[1], next_to_explore)
-              moves.push({ pos: next_to_explore, ori: mod(new_ori, 2) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori, 2) })
             }
           }
         }
@@ -1105,7 +1132,8 @@ export default function Home() {
       return moves
     }
   }
-  // TODO: for edges too
+
+  // Corner: in place
   function genBlindMoves(cube, moves, corner_state, cnt) {
     // console.log("iteration: ", cnt)
 
@@ -1119,11 +1147,11 @@ export default function Home() {
         if (corner.pos === 3) {
           if (corner.id !== 3) {
             if (corner.ori === 0) {
-              moves.push({ pos: corner.id, ori: mod(corner.ori, 3) })
+              moves.push({ pos: corner.id, ori: helper.mod(corner.ori, 3) })
             } else if (corner.ori === 1) {
-              moves.push({ pos: corner.id, ori: mod(corner.ori + 1, 3) })
+              moves.push({ pos: corner.id, ori: helper.mod(corner.ori + 1, 3) })
             } else if (corner.ori === 2) {
-              moves.push({ pos: corner.id, ori: mod(corner.ori - 1, 3) })
+              moves.push({ pos: corner.id, ori: helper.mod(corner.ori - 1, 3) })
             }
             corner_state[corner.id] = 1
           } else { // when the buffer is already solved
@@ -1131,11 +1159,11 @@ export default function Home() {
             corner_state[next_to_explore] = -1 // borrow this new piece
             var [_, new_ori] = pos2idori(cube[0], next_to_explore)
             if (new_ori === 0) {
-              moves.push({ pos: next_to_explore, ori: mod(new_ori, 3) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori, 3) })
             } else if (new_ori === 1) {
-              moves.push({ pos: next_to_explore, ori: mod(new_ori + 1, 3) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori + 1, 3) })
             } else if (new_ori === 2) {
-              moves.push({ pos: next_to_explore, ori: mod(new_ori - 1, 3) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori - 1, 3) })
             }
           }
         }
@@ -1154,21 +1182,21 @@ export default function Home() {
               corner_state[corner.id] = 1
 
               if (corner.ori === 0) {
-                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori, 3) })
+                moves.push({ pos: corner.id, ori: helper.mod(corner.ori + moves[moves.length - 1].ori, 3) })
               } else if (corner.ori === 1) {
-                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori + 1, 3) })
+                moves.push({ pos: corner.id, ori: helper.mod(corner.ori + moves[moves.length - 1].ori + 1, 3) })
               } else if (corner.ori === 2) {
-                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
+                moves.push({ pos: corner.id, ori: helper.mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
               }
             } else if (corner_state[corner.id] === 0) {
               corner_state[corner.id] = 1
 
               if (corner.ori === 0) {
-                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori, 3) })
+                moves.push({ pos: corner.id, ori: helper.mod(corner.ori + moves[moves.length - 1].ori, 3) })
               } else if (corner.ori === 1) {
-                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori + 1, 3) })
+                moves.push({ pos: corner.id, ori: helper.mod(corner.ori + moves[moves.length - 1].ori + 1, 3) })
               } else if (corner.ori === 2) {
-                moves.push({ pos: corner.id, ori: mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
+                moves.push({ pos: corner.id, ori: helper.mod(corner.ori + moves[moves.length - 1].ori - 1, 3) })
               }
             } else if (corner_state[corner.id] === 1 || corner_state[corner.id] === 2) { // TODO:why does 2 not handle pointed buffer case?
               next_to_explore = exploreNext(corner_state) // don't borrow corner.pos itself
@@ -1176,11 +1204,11 @@ export default function Home() {
               corner_state[next_to_explore] = -1 // borrow this new piece
               var [_, new_ori] = pos2idori(cube[0], next_to_explore)
               if (new_ori === 0) {
-                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori, 3) })
+                moves.push({ pos: next_to_explore, ori: helper.mod(new_ori + moves[moves.length - 1].ori, 3) })
               } else if (new_ori === 1) {
-                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori + 1, 3) })
+                moves.push({ pos: next_to_explore, ori: helper.mod(new_ori + moves[moves.length - 1].ori + 1, 3) })
               } else if (new_ori === 2) {
-                moves.push({ pos: next_to_explore, ori: mod(new_ori + moves[moves.length - 1].ori - 1, 3) })
+                moves.push({ pos: next_to_explore, ori: helper.mod(new_ori + moves[moves.length - 1].ori - 1, 3) })
               }
             }
 
@@ -1190,11 +1218,11 @@ export default function Home() {
             corner_state[next_to_explore] = -1 // borrow this new piece
             var [_, new_ori] = pos2idori(cube[0], next_to_explore)
             if (new_ori === 0) {
-              moves.push({ pos: next_to_explore, ori: mod(new_ori, 3) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori, 3) })
             } else if (new_ori === 1) {
-              moves.push({ pos: next_to_explore, ori: mod(new_ori + 1, 3) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori + 1, 3) })
             } else if (new_ori === 2) {
-              moves.push({ pos: next_to_explore, ori: mod(new_ori - 1, 3) })
+              moves.push({ pos: next_to_explore, ori: helper.mod(new_ori - 1, 3) })
             }
 
           }
@@ -1207,6 +1235,7 @@ export default function Home() {
     }
   }
 
+  // Edge: in place
   function oriAtE13(blind_move1, blind_move2, moves) {
     const target_pos1 = blind_move1.pos
     const target_pos2 = blind_move2.pos
@@ -1238,11 +1267,11 @@ export default function Home() {
       }
     })
 
-    var diff_ori1 = mod(new_ori1 - ori_ori1, 2);
-    var diff_ori2 = mod(new_ori2 - ori_ori2, 2);
+    var diff_ori1 = helper.mod(new_ori1 - ori_ori1, 2);
+    var diff_ori2 = helper.mod(new_ori2 - ori_ori2, 2);
 
-    var oriAtE1 = mod(blind_move1.ori + diff_ori1, 2)
-    var oriAtE3 = mod(blind_move2.ori + diff_ori2, 2)
+    var oriAtE1 = helper.mod(blind_move1.ori + diff_ori1, 2)
+    var oriAtE3 = helper.mod(blind_move2.ori + diff_ori2, 2)
 
     // const pair = [oriAtC1, oriAtC2]
 
@@ -1280,27 +1309,15 @@ export default function Home() {
       }
     })
 
-    var diff_ori1 = mod(new_ori1 - ori_ori1, 3);
-    var diff_ori2 = mod(new_ori2 - ori_ori2, 3);
+    var diff_ori1 = helper.mod(new_ori1 - ori_ori1, 3);
+    var diff_ori2 = helper.mod(new_ori2 - ori_ori2, 3);
 
-    var oriAtC1 = mod(blind_move1.ori + diff_ori1, 3)
-    var oriAtC2 = mod(blind_move2.ori + diff_ori2, 3)
+    var oriAtC1 = helper.mod(blind_move1.ori + diff_ori1, 3)
+    var oriAtC2 = helper.mod(blind_move2.ori + diff_ori2, 3)
 
     // const pair = [oriAtC1, oriAtC2]
 
     return oriAtC1 * 10 + oriAtC2;
-  }
-  function oriAtC0(id, moves) {
-    var tmpEdges = clonePieces(varEdges)
-    var tmpCorners = clonePieces(varCorners)
-    var tmpCube = [tmpCorners, tmpEdges]
-
-    for (var i = 0; i < moves.length; i++) {
-      tmpCube = move(tmpCorners, tmpEdges, ...move_map[moves[i]], false)
-      tmpCorners = tmpCube[0]
-    }
-
-    return tmpCorners[id].ori
   }
 
   const undo_moves = {
@@ -1485,7 +1502,6 @@ export default function Home() {
       for (var i = 0; i < blind_moves.length; i += 2) {
         var setup_moves = eBFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 3)
         // console.log("setup moves:", setup_moves)
-
         const e13ori = oriAtE13(blind_moves[i], blind_moves[i + 1], setup_moves)
         // console.log("digit", e13ori)
         // console.log("second digit:", c12ori[1])
@@ -1502,7 +1518,6 @@ export default function Home() {
         // console.log("@@#############@@")
         var setup_moves = eBFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 3)
         // console.log("setup moves:", setup_moves)
-
         const e13ori = oriAtE13(blind_moves[i], blind_moves[i + 1], setup_moves)
         // console.log("digit", e13ori)
         // console.log("second digit:", c12ori[1])
@@ -1678,7 +1693,6 @@ export default function Home() {
       execute(solveParity(blind_moves[blind_moves.length - 1].pos))
       // console.log(varCorners)
     }
-
     // setKey(event.code)
   }
 
@@ -1688,22 +1702,26 @@ export default function Home() {
 
   // handle keys
   return (
-    <div ref={keyBoard} tabIndex={0} onKeyDown={(e) => keyDownHandler(e)} className={utilStyles.input}>
-      <div className={utilStyles.movesStringWrap}>
-        <div className={utilStyles.movesString}>
-          {movesString}
+    <Nav>
+      <div ref={keyBoard} tabIndex={0} onKeyDown={(e) => keyDownHandler(e)} className={utilStyles.input}>
+        <div className={utilStyles.movesStringWrap}>
+          <div className={utilStyles.movesString}>
+            {movesString}
+          </div>
         </div>
+        <Info title="How To Use">K: R, L:R'</Info>
+        <Info title="Setup">Zhenyu's showcase of the tools his uses to achieve insane flexibility</Info>
+        <Canvas camera={{ position: [0, 0, 35], aspectRatio: 1 }}>
+          <ambientLight intensity={0.5} />
+          <pointLight position={[20, 20, 20]} />
+          <OrbitControls enableZoom={false} />
+          <Cube3D
+            centers={centers}
+            corners={corners}
+            edges={edges}
+          ></Cube3D>
+        </Canvas>
       </div>
-      <Canvas camera={{ position: [0, 0, 35], aspectRatio: 1 }}>
-        <ambientLight intensity={0.5} />
-        <pointLight position={[20, 20, 20]} />
-        <OrbitControls />
-        <Cube3D
-          centers={centers}
-          corners={corners}
-          edges={edges}
-        ></Cube3D>
-      </Canvas>
-    </div>
+    </Nav>
   )
 }

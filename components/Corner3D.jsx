@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 
-export default function Box(props) {
+export default function Corner3D(props) {
   // const [ ori, setOri ] = useState(0)
   // const [ mat, setMat ] = useState(new THREE.Matrix4())
 
