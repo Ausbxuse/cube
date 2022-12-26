@@ -25,14 +25,15 @@ function help_info_content() {
       <kbd>i</kbd> = Scramble cube <br />
       <kbd>Tab</kbd> = Reset cube <br />
       <kbd>R</kbd> = Solve cube using 3-blind method<br />
-      <kbd>X</kbd> = y <br /> <br /> <br /> <br /> <br />
+      <kbd>X</kbd> = y <br /> <br /> <br />
+      You could also use the provided keypad to turn the cube <br />  <br />
       Click anywhere to escape out of this help menu
     </>
   )
 }
 
 export default function Nav({ children }) {
-  const [showHelp, setShowHelp] = useState(true);
+  const [showHelp, setShowHelp] = useState(false);
   function toggle() {
     setShowHelp(!showHelp);
   }

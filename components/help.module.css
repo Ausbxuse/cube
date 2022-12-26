@@ -15,14 +15,19 @@
   /* align-items: center; */
   /* filter: blur(4px);  */
   backdrop-filter: blur(1.0em);
+  /* backdrop-filter: opacity(50%); */
+
+  /* -webkit-backdrop-filter: blur(1.0em); */
   font-size: 1.5em;
+  /* background-color: rgba(0, 0, 0, 0.5);   */
+
 }
 
 .titleContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin: 0.5em auto auto auto
+  margin: 1.5em auto auto auto
 }
 
 .helpContent {

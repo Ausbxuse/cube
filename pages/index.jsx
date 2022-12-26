@@ -1608,7 +1608,99 @@ export default function Home() {
     return res
   }
 
+  function animateR() {
+    const cube = R([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "R ")
+  }
+  function animateRp() {
+    const cube = Rp([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "R' ")
+  }
+  function animateU() {
+    const cube = U([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "U ")
+  }
+  function animateUp() {
+    const cube = Up([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "U' ")
+  }
+  function animateF() {
+    const cube = F([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "F ")
+  }
+  function animateFp() {
+    const cube = Fp([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "F' ")
+  }
+  function animateB() {
+    const cube = B([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "B ")
+  }
+  function animateBp() {
+    const cube = Bp([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "B' ")
+  }
+  function animateD() {
+    const cube = D([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "D ")
+  }
+  function animateDp() {
+    const cube = Dp([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "D' ")
+  }
+  function animateL() {
+    const cube = L([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "L ")
+  }
+  function animateLp() {
+    const cube = Lp([varCorners, varEdges])
+    varCorners = cube[0]
+    varEdges = cube[1]
+    animate()
+    setMovesString((movesString) => movesString += "L' ")
+  }
 
+  function animateScramble() {
+    const mvs = scramble()
+    execute(mvs)
+  }
+
+  function animateSolveCube() {
+    solveCube([varCorners, varEdges], [])
+  }
   // handle keys
   function keyDownHandler(event) {
     if (event.code === "KeyF") {
@@ -1758,6 +1850,68 @@ export default function Home() {
             ></Cube3D>
           </Canvas>
         </div>
+
+        <div className={utilStyles.buttonRootContainer}>
+          <div className={utilStyles.buttonContainer}>
+            <div className={utilStyles.buttonGridContainer}>
+              <button onClick={Reset} >
+                Reset
+              </button>
+              <button onClick={animateLp} >
+                L'
+              </button>
+              <button onClick={animateUp} >
+                U'
+              </button>
+              <button onClick={animateU} >
+                U
+              </button>
+              <button onClick={animateR} >
+                R
+              </button>
+              <button onClick={animateR} >
+                ?
+              </button>
+              <button onClick={animateScramble} >
+                Scramble
+              </button>
+              <button onClick={animateL} >
+                L
+              </button>
+              <button onClick={animateFp} >
+                F'
+              </button>
+              <button onClick={animateF} >
+                F
+              </button>
+              <button onClick={animateRp} >
+                R'
+              </button>
+              <button onClick={animateR} >
+                ???
+              </button>
+              <button onClick={animateSolveCube} >
+                Solve
+              </button>
+              <button onClick={animateD} >
+                D
+              </button>
+              <button onClick={animateB} >
+                B
+              </button>
+              <button onClick={animateBp} >
+                B'
+              </button>
+              <button onClick={animateDp} >
+                Dp
+              </button>
+              <button onClick={animateR} >
+                ???
+              </button>
+            </div>
+          </div>
+        </div>
+
 
       </div>
     </div>

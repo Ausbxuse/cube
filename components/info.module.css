@@ -12,6 +12,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
   /* filter: blur(4px);  */
-  backdrop-filter: blur(1.0em);
+  /* backdrop-filter: blur(1.0em); */
 }

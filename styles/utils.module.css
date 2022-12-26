@@ -16,9 +16,54 @@
 }
 
 .rootContainer {
-  height: calc(100vh - 3.2em);
+  height: calc(100vh);
+  display: flex;
+  flex-direction: column;
+  background-image: url('https://static.vecteezy.com/system/resources/previews/000/581/300/original/abstract-summer-polygonal-background-spring-nature-orange-color-vector.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
 
 .canvasContainer {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.buttonRootContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buttonContainer {
+  width: 20em;
+  height: 10em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(0,0,0, 0.5);
+  backdrop-filter: blur(1em);
+  border-radius: 0.5em;
+  padding: 1em;
+  margin: 1em; 
+
+  /* box-shadow: 0 0 5px 2px var(--color-bg-toggle); */
+  /* box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset; */
+box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+}
+
+.buttonGridContainer {
+  /* margin: 2em 2em 6em 2em; */
+  column-gap: 1em;
+  row-gap: 1em;
+  width: 20em;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.buttonGridContainer > button {
+  width: 1fr;
+  height: 3.0em;
 }
