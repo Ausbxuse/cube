@@ -54,13 +54,20 @@ export default function Nav({ children }) {
             {showHelp ? null :
               <button type="button" onClick={toggle}>
                 <Image
-                  src="/images/snappy-logo.png"
+                  src="/images/question_mark.png"
                   className={styles.logo}
                   width={36}
                   height={36}
                 />
               </button>
             }
+            <Link href="https://github.com/ausbxuse/cube">
+              <Image
+                src="/images/github-mark.png"
+                width={36}
+                height={36}
+              />
+            </Link>
             <Link href="/">
               <Image
                 src="/images/snappy-logo.png"
