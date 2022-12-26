@@ -9,6 +9,15 @@ import * as THREE from 'three'
 import * as helper from '../components/helper'
 // import next from 'next'
 
+// FIXME: after t-perm and 'i' to scramble, the solver fails at the end
+// TODO: question mark icon for help menu
+// TODO demo video
+// TODO: add scrambled moves
+// TODO add solver moves
+// TODO: add replay
+// TODO responsive
+
+// TODO: add tps
 // TODO: rotation does not work with solver
 // TODO: key/shortcut info menu
 // TODO: different style cube
@@ -686,18 +695,18 @@ export default function Home() {
   }
 
   // not in place
-  function cMatch_2pos(cube, id1, target_pos1) {
-    var actual1_id = -1, actual_ori = -1
+  function cMatch_2pos(cube, ori_id, ori_ori, target_pos) {
+    var actual_id = -1, actual_ori = -1
+
     cube[0].map((corner) => {
-      if (corner.pos == target_pos1) {
-        actual1_id = corner.id
+      if (corner.pos == target_pos) {
+        actual_id = corner.id
         actual_ori = corner.ori
       }
       return corner;
     })
 
-    // console.log(id1, id2, actual1_id, actual2_id)
-    return (id1 === actual1_id && actual_ori === 0)
+    return (actual_id === ori_id && actual_ori === ori_ori)
   }
 
   // not in place
@@ -922,7 +931,7 @@ export default function Home() {
   }
 
   // not in place
-  function cParityBFS(cube, current_pos) { //corner parity that mvoes current_pos to 2 with ori:0
+  function cParityBFS(cube, ori_id, ori_ori) { //corner parity that mvoes current_pos to 2 with ori:0
 
     var frontier = []
     var parents = new Map()
@@ -933,7 +942,7 @@ export default function Home() {
 
     var loop_n = 0
 
-    while (frontier.length != 0 && loop_n < 10000) {
+    while (frontier.length != 0 && loop_n < 100000) {
       loop_n++
       var cube_curr = frontier.shift()
 
@@ -943,7 +952,7 @@ export default function Home() {
           // console.log("a neighbor", v)
           frontier.push(v)
           parents.set(v, cube_curr)
-          if (cMatch_2pos(v, current_pos, 2)) {
+          if (cMatch_2pos(v, ori_id, ori_ori, 2)) {
             var moves = []
 
             while (parents.get(v) !== undefined && v !== undefined) {
@@ -1409,14 +1418,14 @@ export default function Home() {
     return twisted_edge_state
   }
 
-  function solveFlippedEdges() {
-    var flipped_edges = genFlippedEdgeState([varCorners, varEdges])
+  function solveFlippedEdges(cube) {
+    var flipped_edges = genFlippedEdgeState(cube)
 
     var total_moves = []
     // console.log("flipped_edges", flipped_edges)
     while (flipped_edges.length > 0) {
       const next_flip = flipped_edges.shift()
-      var setup_moves = flippedBFS([varCorners, varEdges], next_flip, 2)
+      var setup_moves = flippedBFS(cube, next_flip, 2)
       // const c0ori = oriAtC0(next_flipp, setup_moves)
       // console.log("c0 ori:", c0ori)
       total_moves = total_moves.concat(setup_moves, flip_alg[0], undo(setup_moves))
@@ -1436,14 +1445,14 @@ export default function Home() {
     return twisted_corner_state
   }
 
-  function solveTwistedCorners() {
-    var twisted_corners = genTwistedCornerState([varCorners, varEdges])
+  function solveTwistedCorners(cube) {
+    var twisted_corners = genTwistedCornerState(cube)
 
     var total_moves = []
     // console.log("twisted_corners", twisted_corners)
     while (twisted_corners.length > 0) {
       const next_twist = twisted_corners.shift()
-      var setup_moves = twistedBFS([varCorners, varEdges], next_twist, 0)
+      var setup_moves = twistedBFS(cube, next_twist, 0)
       // const c0ori = oriAtC0(next_twist, setup_moves)
       // console.log("c0 ori:", c0ori)
       total_moves = total_moves.concat(setup_moves, corner_twist1_alg[varCorners[next_twist].ori], undo(setup_moves))
@@ -1451,13 +1460,13 @@ export default function Home() {
     return total_moves
   }
 
-  function solve_corners() {
-    var corner_state = genCornerState([varCorners, varEdges])
-    var blind_moves = genBlindMoves([varCorners, varEdges], [], corner_state, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
+  function solve_corners(cube) {
+    var corner_state = genCornerState(cube)
+    var blind_moves = genBlindMoves(cube, [], corner_state, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
     if (blind_moves.length % 2 === 0) { // No parity
       var total_moves = []
       for (var i = 0; i < blind_moves.length; i += 2) {
-        var setup_moves = BFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 2)
+        var setup_moves = BFS(cube, blind_moves[i].pos, blind_moves[i + 1].pos, 1, 2)
         // console.log("setup moves:", setup_moves)
 
         const c12ori = oriAtC12(blind_moves[i], blind_moves[i + 1], setup_moves)
@@ -1475,7 +1484,7 @@ export default function Home() {
       var total_moves = []
       for (var i = 0; i < blind_moves.length - 1; i += 2) {
         // console.log("@@#############@@")
-        var setup_moves = BFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 2)
+        var setup_moves = BFS(cube, blind_moves[i].pos, blind_moves[i + 1].pos, 1, 2)
         // console.log("setup moves:", setup_moves)
 
         const c12ori = oriAtC12(blind_moves[i], blind_moves[i + 1], setup_moves)
@@ -1494,13 +1503,13 @@ export default function Home() {
     }
   }
 
-  function solve_edges(parity) {
-    var edge_state = genEdgeState([varCorners, varEdges])
-    var blind_moves = genEdgeBlindMoves([varCorners, varEdges], [], edge_state, 0, parity) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
+  function solve_edges(cube, parity) {
+    var edge_state = genEdgeState(cube)
+    var blind_moves = genEdgeBlindMoves(cube, [], edge_state, 0, parity) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
     if (blind_moves.length % 2 === 0) { // No parity
       var total_moves = []
       for (var i = 0; i < blind_moves.length; i += 2) {
-        var setup_moves = eBFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 3)
+        var setup_moves = eBFS(cube, blind_moves[i].pos, blind_moves[i + 1].pos, 1, 3)
         // console.log("setup moves:", setup_moves)
         const e13ori = oriAtE13(blind_moves[i], blind_moves[i + 1], setup_moves)
         // console.log("digit", e13ori)
@@ -1516,7 +1525,7 @@ export default function Home() {
       var total_moves = []
       for (var i = 0; i < blind_moves.length - 1; i += 2) {
         // console.log("@@#############@@")
-        var setup_moves = eBFS([varCorners, varEdges], blind_moves[i].pos, blind_moves[i + 1].pos, 1, 3)
+        var setup_moves = eBFS(cube, blind_moves[i].pos, blind_moves[i + 1].pos, 1, 3)
         // console.log("setup moves:", setup_moves)
         const e13ori = oriAtE13(blind_moves[i], blind_moves[i + 1], setup_moves)
         // console.log("digit", e13ori)
@@ -1533,31 +1542,57 @@ export default function Home() {
 
   }
 
-  function solveParity(last_corner_to_be_solved) {
-    const setup_moves = cParityBFS([varCorners, varEdges], last_corner_to_be_solved)
-    var total_moves = []
+  function solveParity(ori_id, ori_ori) {
+    // const setup_moves = cParityBFS([varCorners, varEdges], ori_id, ori_ori)
+    // // console.log("setup moves for parity", setup_moves)
+    // var total_moves = []
 
-    total_moves = total_moves.concat(setup_moves, parity_algs[0], undo(setup_moves))
+    // total_moves = total_moves.concat(setup_moves, parity_algs[0], undo(setup_moves))
+    total_moves = total_moves.concat(parity_algs[0])
     return total_moves
   }
 
-  function solveCube() {
-    var corner_state = genCornerState([varCorners, varEdges])
-    var blind_moves = genBlindMoves([varCorners, varEdges], [], corner_state, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
+  function solveCube(cube, total_moves) {
+    var corner_state = genCornerState(cube)
+    console.log("corner state:", corner_state)
+    var blind_moves = genBlindMoves(cube, [], corner_state, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
 
-    const corner_solver = solve_corners()
+    const corner_solver = solve_corners(cube)
     const parity = corner_solver[1]
     const corner_solution = corner_solver[0]
 
     var total_moves
+
+    console.log("parity", parity)
     if (!parity) {
-      total_moves = [].concat(corner_solution, solve_edges(false), solveTwistedCorners(), solveFlippedEdges())
+      console.log("after parity check, moves are: ", total_moves)
+      total_moves = total_moves.concat(corner_solution, solve_edges(cube, false), solveTwistedCorners(cube), solveFlippedEdges(cube))
+      execute(total_moves)
       console.log("solution:", total_moves)
     } else {
-      total_moves = [].concat(corner_solution, solve_edges(true), solveParity(blind_moves[blind_moves.length - 1].pos), solveTwistedCorners(), solveFlippedEdges())
-      // total_moves = [].concat(solveTwistedCorners(), solveFlippedEdges(), corner_solution, solve_edges(true))
+      total_moves = [].concat(parity_algs[0])
+      // const ori_pos = blind_moves[blind_moves.length - 1].pos
+      // const ori_id = pos2idori(varCorners, ori_pos)[0]
+      // const ori_ori1 = blind_moves[blind_moves.length - 1].ori
+      // const ori_ori2 = pos2idori(varCorners, ori_pos)[1]
+      // console.log(ori_ori1, ori_ori2)
+      // total_moves = [].concat(corner_solution, solve_edges(true), solveParity(ori_id, ori_ori1), solveTwistedCorners(), solveFlippedEdges()) //FIXME: parity case for edge (when pos 3 is flipped but is solved (id 0))
+
+      // var cube_no_parity = [clonePieces(cube[0]), clonePieces(cube[1])]
+      // var cube_no_parity = cube
+
+      while (total_moves.length > 0) {
+        const next_move = total_moves.shift()
+        cube = move(cube[0], cube[1], ...move_map[next_move], false)
+      }
+
+      const corner_solver = solve_corners(cube)
+      console.log("fix parity", corner_solver[1])
+
+      total_moves = [].concat(parity_algs[0])
+      solveCube(cube, total_moves)
+      // FIXME: parity case for corners: don't need to twist the buffer itself 
     }
-    execute(total_moves)
 
   }
 
@@ -1667,30 +1702,31 @@ export default function Home() {
       var blindmoves = genBlindMoves([varCorners, varEdges], [], corner_state, 0)
       console.log("blindmoves:", blindmoves)
     } else if (event.code === "KeyE") {
-      var edge_state = genEdgeState([varCorners, varEdges])
-      var blindmoves = genEdgeBlindMoves([varCorners, varEdges], [], edge_state, 0)
-      console.log("blindmoves:", blindmoves)
+      // apply debug moves
+      var mvs = ["D", "D", "L", "L", "F", "B", "B", "R'", "B'", "U'", "L", "B'", "L", "L", "D", "D", "R", "F", "F", "D", "D", "L", "F", "F", "U", "U", "F", "F", "R"]
+      execute(mvs)
     } else if (event.code === "KeyI") {
       const mvs = scramble()
       execute(mvs)
       console.log("scramble: ", mvs)
     } else if (event.code === "KeyY") {
+      execute(solve_edges(true))
       // execute([].concat(corner_algs[22], corner_algs[22]))
-      // solveTwistedCorners()
-      execute(solveFlippedEdges())
       // execute(flip_alg[0])
       // console.log(varCorners)
     } else if (event.code === "KeyT") {
       execute(solve_corners()[0])
-      // console.log(varCorners)
+      console.log(varCorners)
+      // execute(solveTwistedCorners())
+      // execute(solveFlippedEdges())
     } else if (event.code === "KeyR") {
-      solveCube()
-      // execute(solve_edges(true))
+      solveCube([varCorners, varEdges], [])
       // console.log(varCorners)
     } else if (event.code === "KeyW") {
-      var corner_state = genCornerState([varCorners, varEdges])
-      var blind_moves = genBlindMoves([varCorners, varEdges], [], corner_state, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
-      execute(solveParity(blind_moves[blind_moves.length - 1].pos))
+      // var corner_state = genCornerState([varCorners, varEdges])
+      // var blind_moves = genBlindMoves([varCorners, varEdges], [], corner_state, 0) // list of pairs. First element being the target pos (aka id) and second the pointed_ori
+      // console.log("blind_moves:", blind_moves)
+      execute(solveParity())
       // console.log(varCorners)
     }
     // setKey(event.code)
@@ -1702,26 +1738,28 @@ export default function Home() {
 
   // handle keys
   return (
-    <Nav>
-      <div ref={keyBoard} tabIndex={0} onKeyDown={(e) => keyDownHandler(e)} className={utilStyles.input}>
-        <div className={utilStyles.movesStringWrap}>
-          <div className={utilStyles.movesString}>
-            {movesString}
+    <div className={utilStyles.rootContainer}>
+      <Nav></Nav>
+      <div className={utilStyles.canvasContainer}>
+        <div ref={keyBoard} tabIndex={0} onKeyDown={(e) => keyDownHandler(e)} className={utilStyles.input}>
+          <div className={utilStyles.movesStringWrap}>
+            <div className={utilStyles.movesString}>
+              {movesString}
+            </div>
           </div>
+          <Canvas camera={{ position: [0, 0, 35], aspectRatio: 1 }}>
+            <ambientLight intensity={0.5} />
+            <pointLight position={[20, 20, 20]} />
+            <OrbitControls enableZoom={false} />
+            <Cube3D
+              centers={centers}
+              corners={corners}
+              edges={edges}
+            ></Cube3D>
+          </Canvas>
         </div>
-        <Info title="How To Use">K: R, L:R'</Info>
-        <Info title="Setup">Zhenyu's showcase of the tools his uses to achieve insane flexibility</Info>
-        <Canvas camera={{ position: [0, 0, 35], aspectRatio: 1 }}>
-          <ambientLight intensity={0.5} />
-          <pointLight position={[20, 20, 20]} />
-          <OrbitControls enableZoom={false} />
-          <Cube3D
-            centers={centers}
-            corners={corners}
-            edges={edges}
-          ></Cube3D>
-        </Canvas>
+
       </div>
-    </Nav>
+    </div>
   )
 }

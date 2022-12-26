@@ -56,3 +56,9 @@ textarea:focus, input:focus{
 *:focus {
     outline: none;
 }
+kbd {
+  border-radius: 2px;
+  padding: 2px;
+  border: 1px solid black;
+  font-size: 0.6em;
+}

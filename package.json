@@ -7,21 +7,21 @@
     "build": "next build",
     "start": "next start -p 8000"
   },
-  "dependencies": {
-    "@animated-burgers/burger-squeeze": "^1.1.2",
-    "@emotion/styled": "^11.10.5",
-    "@react-spring/three": "^9.3.0",
-    "@react-three/drei": "^7.20.5",
-    "@react-three/fiber": "^7.0.19",
-    "next": "^13.0.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-spring": "^9.3.0",
-    "three": "^0.134.0"
-  },
   "devDependencies": {
     "eslint": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "prettier": "^2.5.0"
+  },
+  "dependencies": {
+    "@animated-burgers/burger-squeeze": "^1.1.2",
+    "@emotion/styled": "^11.10.5",
+    "@react-spring/three": "^9.6.1",
+    "@react-three/drei": "^9.47.1",
+    "@react-three/fiber": "^8.9.1",
+    "next": "^13.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-spring": "^9.6.1",
+    "three": "^0.148.0"
   }
 }
